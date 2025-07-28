@@ -177,6 +177,32 @@ export default function CourseDetailPage() {
     }
   };
 
+  const handleDownloadAssignment = async (assignmentId: string) => {
+    try {
+      const id = assignmentId || selectedAssignment?._id;
+      const res = await fetch(`/api/assignments/${id}/download`);
+      if (!res.ok) throw new Error("Failed to download submissions");
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      let filename =
+        res.headers.get("Content-Disposition")?.split("filename=")[1] ||
+        "submissions.zip";
+      filename = filename.replace(/"/g, "").replace(/_/g, " ");
+      a.href = url;
+      a.download = filename;
+
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download error:", err);
+      alert("Download failed");
+    }
+  };
+
   if (!course) {
     return (
       <Flex
@@ -355,6 +381,22 @@ export default function CourseDetailPage() {
                                 Download File
                               </Button>
                             )}
+                            <Button
+                              leftIcon={<FiDownload />}
+                              size="sm"
+                              as="a"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              mt={3}
+                              colorScheme="blue"
+                              variant="outline"
+                              borderRadius="full"
+                              onClick={() =>
+                                handleDownloadAssignment(assignment._id)
+                              }
+                            >
+                              Download Submitted Assignments
+                            </Button>
                           </Box>
                           <Menu>
                             <MenuButton
