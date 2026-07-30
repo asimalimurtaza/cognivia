@@ -1,41 +1,61 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
-
-const LAMBDA_RESULTS_URL = process.env.LAMBDA_RESULTS_URL || "";
+import connectDB from "@/lib/mongodb";
+import QuizResult from "@/models/QuizResult";
+import Quiz from "@/models/Quiz";
 
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    const token = session?.user?.accessToken;
-
-    if (!token) {
+    if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
+    const { userID, quizID, score, total, percentage } = body;
 
-    const lambdaRes = await fetch(LAMBDA_RESULTS_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-
-    const data = await lambdaRes.json();
-
-    if (!lambdaRes.ok) {
+    if (
+      !userID ||
+      !quizID ||
+      score === undefined ||
+      total === undefined ||
+      percentage === undefined
+    ) {
       return NextResponse.json(
-        { error: "Lambda error", details: data },
-        { status: lambdaRes.status }
+        { error: "Missing required fields" },
+        { status: 400 }
       );
     }
 
-    return NextResponse.json(data, { status: 201 });
+    if (session.user.id !== userID) {
+      return NextResponse.json({ error: "User ID mismatch" }, { status: 403 });
+    }
+
+    await connectDB();
+
+    const createdResult = await QuizResult.create({
+      userID,
+      quizID,
+      score,
+      total,
+      percentage,
+    });
+
+    await Quiz.updateOne(
+      { $or: [{ _id: quizID }, { quizID }] },
+      { $set: { score, isTaken: true } }
+    );
+
+    return NextResponse.json(
+      {
+        message: "Result stored successfully",
+        resultId: createdResult._id,
+      },
+      { status: 201 }
+    );
   } catch (err) {
-    console.error("Proxy error:", err);
+    console.error("Results POST Error:", err);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

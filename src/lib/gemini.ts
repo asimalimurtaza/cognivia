@@ -1,27 +1,27 @@
 // lib/gemini.ts
 
-const LAMBDA_API_URL = process.env.LAMBDA_GEMINI_API_URL!;
-
 type GeminiApiResponse = {
-  output?: {
-    candidates?: Array<{
-      content?: {
-        parts?: Array<{
-          text?: string;
-        }>;
-      };
-    }>;
-  };
+  candidates?: Array<{
+    content?: {
+      parts?: Array<{
+        text?: string;
+      }>;
+    };
+  }>;
 };
 
 export async function generateGeminiContent(prompt: string) {
   try {
-    const response = await fetch(LAMBDA_API_URL, {
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+
+    const response = await fetch(geminiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+      }),
     });
 
     if (!response.ok) {
@@ -29,11 +29,11 @@ export async function generateGeminiContent(prompt: string) {
     }
 
     const data: GeminiApiResponse = await response.json();
-    const reply = data.output?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     return reply || "No response.";
   } catch (error) {
-    console.error("Lambda Gemini Error:", error);
+    console.error("Gemini API Error:", error);
     return "Something went wrong.";
   }
 }

@@ -3,27 +3,36 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import connectDB from "@/lib/mongodb";
 import CourseModel from "@/models/Course";
-
-
-const LAMBDA_URL =
-   process.env.LAMBDA_COURSES_CRUD_URL || "";
+import "@/models/Assignment";
+import "@/models/Message";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions);
-  const token = session?.user?.accessToken;
+  try {
+    await connectDB();
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const res = await fetch(`${LAMBDA_URL}?courseId=${params.id}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+    const course = await CourseModel.findById(params.id)
+      .populate("assignments")
+      .populate("messages");
 
-  const data = await res.json();
-  return NextResponse.json(data, { status: res.status });
+    if (!course) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(course);
+  } catch (error) {
+    console.error("Error fetching course:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch course" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function PUT(
