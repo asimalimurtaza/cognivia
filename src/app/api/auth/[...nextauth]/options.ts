@@ -53,7 +53,7 @@ export const authOptions: NextAuthOptions = {
             await sendSuspiciousLoginEmail(user.email, token);
           }
           throw new Error(
-            "Your account is blocked due to suspicious activity."
+            "Your account is blocked due to suspicious activity.",
           );
         }
 
@@ -87,7 +87,7 @@ export const authOptions: NextAuthOptions = {
             // Send suspicious activity email
             await sendSuspiciousLoginEmail(user.email, token);
             throw new Error(
-              "Account blocked due to multiple failed login attempts."
+              "Account blocked due to multiple failed login attempts.",
             );
           }
           await user.save();
@@ -101,7 +101,7 @@ export const authOptions: NextAuthOptions = {
         //Trigger 2FA email if enabled
         if (user.is2FAEnabled) {
           const otpCode = Math.floor(
-            100000 + Math.random() * 900000
+            100000 + Math.random() * 900000,
           ).toString();
           const expiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
           user.twoFactorOtp = otpCode;
@@ -191,7 +191,7 @@ export const authOptions: NextAuthOptions = {
       if (user.requires2FA) {
         const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
         return `${baseUrl}/login/2fa-verification?email=${encodeURIComponent(
-          user.email ?? ""
+          user.email ?? "",
         )}`;
       }
       return true;

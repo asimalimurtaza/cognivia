@@ -1,38 +1,63 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
-
-const LAMBDA_COURSE_API_URL = process.env.LAMBDA_COURSE_API_URL || "";
+import connectDB from "@/lib/mongodb";
+import Course from "@/models/Course";
 
 export async function GET() {
-  const res = await fetch(LAMBDA_COURSE_API_URL);
-  const data = await res.json();
-
-  return NextResponse.json(data, { status: res.status });
+  try {
+    await connectDB();
+    const courses = await Course.find({}).sort({ createdAt: -1 });
+    return NextResponse.json(courses);
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    return NextResponse.json({ error: "Failed to fetch courses" }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  const token = session?.user?.accessToken;
-  if (process.env.NODE_ENV !== "production") {
-    console.log("Token from session:", token);
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || session.user.role !== "teacher") {
+      return NextResponse.json(
+        { error: "Only teachers can create courses" },
+        { status: 403 }
+      );
+    }
+
+    await connectDB();
+    const body = await req.json();
+    const { title, description, subject, level } = body;
+
+    if (!title || !subject || !level) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    const joinCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+    const newCourse = await Course.create({
+      title,
+      description,
+      subject,
+      level,
+      createdBy: session.user.id,
+      teacher: session.user.id,
+      joinCode,
+      students: [],
+      assignments: [],
+      liveClasses: [],
+      messages: [],
+    });
+
+    return NextResponse.json(newCourse, { status: 201 });
+  } catch (error) {
+    console.error("Error creating course:", error);
+    return NextResponse.json(
+      { error: "Failed to create course" },
+      { status: 500 }
+    );
   }
-
-  if (!token) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const body = await req.json();
-
-  const res = await fetch(LAMBDA_COURSE_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-  return NextResponse.json(data, { status: res.status });
 }

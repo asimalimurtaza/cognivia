@@ -11,15 +11,15 @@ import {
   Spinner,
   Flex,
   useColorModeValue,
-  Card,
-  CardBody,
-  InputGroup,
-  InputRightElement,
   Avatar,
   Icon,
+  Badge,
 } from "@chakra-ui/react";
 import { useEffect, useState, useRef } from "react";
-import { FiMessageCircle } from "react-icons/fi";
+import { FiMessageCircle, FiSend, FiClock } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
+
+const MotionBox = motion(Box);
 
 interface Message {
   _id: string;
@@ -32,26 +32,24 @@ export default function CourseMessages({ courseId }: { courseId: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
-  const [isPostingMessage, setIsPostingMessage] = useState(false); // For send button loading
+  const [isPostingMessage, setIsPostingMessage] = useState(false);
   const toast = useToast();
-  const messagesEndRef = useRef<HTMLDivElement>(null); // Ref for auto-scrolling
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // --- Material You-inspired Color Mode Values ---
-  const containerBg = useColorModeValue("white", "gray.800");
-  const containerBorder = useColorModeValue("gray.100", "gray.700");
-  const containerShadow = useColorModeValue("lg", "dark-lg");
-  const messageInputBg = useColorModeValue("gray.50", "gray.700");
+  const containerBg = useColorModeValue("white", "gray.850");
+  const containerBorder = useColorModeValue("gray.100", "gray.750");
+  const containerShadow = useColorModeValue("0 10px 30px -5px rgba(0, 0, 0, 0.05)", "0 10px 30px -5px rgba(0, 0, 0, 0.4)");
+  const messageInputBg = useColorModeValue("gray.50", "gray.800");
   const messageInputColor = useColorModeValue("gray.800", "gray.100");
-  const messageInputBorder = useColorModeValue("gray.200", "gray.600");
-  const messageInputFocusBorder = useColorModeValue("blue.400", "blue.300");
-  const sendButtonColorScheme = "teal";
-  const messageBubbleBg = useColorModeValue("blue.50", "blue.700");
-  const messageBubbleColor = useColorModeValue("gray.800", "gray.50");
-  const messageMetaColor = useColorModeValue("gray.600", "gray.300");
-  const emptyStateColor = useColorModeValue("gray.500", "gray.400");
-  const emptyStateIconColor = useColorModeValue("blue.300", "blue.600");
-  const avatarBg = useColorModeValue("blue.200", "blue.600");
-  const avatarBgColor = useColorModeValue("blue.800", "white");
+  const messageInputBorder = useColorModeValue("gray.200", "gray.700");
+  const messageInputFocusBorder = useColorModeValue("blue.500", "blue.400");
+  
+  const teacherBubbleBg = useColorModeValue("linear-gradient(135deg, #ebf8ff 0%, #ebf8ff 100%)", "linear-gradient(135deg, #2b6cb0 0%, #2c5282 100%)");
+  const bubbleBorder = useColorModeValue("blue.100", "gray.700");
+  
+  const textColor = useColorModeValue("gray.800", "gray.100");
+  const metaColor = useColorModeValue("gray.500", "gray.400");
+  const emptyIconColor = useColorModeValue("blue.400", "blue.300");
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -79,13 +77,11 @@ export default function CourseMessages({ courseId }: { courseId: string }) {
       } catch (err) {
         console.error("Failed to load messages:", err);
         toast({
-          title: "Error loading messages.",
-          description:
-            (err as Error).message || "Could not retrieve class messages.",
+          title: "Error loading announcements",
+          description: (err as Error).message || "Could not retrieve class messages.",
           status: "error",
           duration: 3000,
           isClosable: true,
-          position: "top",
         });
         setMessages([]);
       } finally {
@@ -118,7 +114,7 @@ export default function CourseMessages({ courseId }: { courseId: string }) {
         setMessages((prev) => [...prev, data]);
         setNewMessage("");
         toast({
-          title: "Message posted.",
+          title: "Announcement posted",
           status: "success",
           duration: 2000,
           isClosable: true,
@@ -130,12 +126,11 @@ export default function CourseMessages({ courseId }: { courseId: string }) {
     } catch (err) {
       console.error("Failed to post message:", err);
       toast({
-        title: "Failed to post message.",
+        title: "Failed to post",
         description: (err as Error).message || "Please try again.",
         status: "error",
         duration: 3000,
         isClosable: true,
-        position: "bottom-right",
       });
     } finally {
       setIsPostingMessage(false);
@@ -144,80 +139,103 @@ export default function CourseMessages({ courseId }: { courseId: string }) {
 
   return (
     <Box
-      p={6}
-      borderWidth={1}
-      borderRadius="xl"
-      mt={6}
+      p={{ base: 4, md: 6 }}
+      borderWidth="1px"
+      borderRadius="2xl"
       bg={containerBg}
       borderColor={containerBorder}
       boxShadow={containerShadow}
-      maxH="600px"
-      overflowY="auto"
+      minH="450px"
+      maxH="650px"
       display="flex"
       flexDirection="column"
     >
-      <VStack spacing={4} align="stretch" flexGrow={1}>
-        {/* Messages Display Area */}
+      <HStack justify="space-between" pb={4} mb={4} borderBottomWidth="1px" borderColor={containerBorder}>
+        <HStack spacing={3}>
+          <Box p={2} bg="blue.500" color="white" borderRadius="xl">
+            <Icon as={FiMessageCircle} w={5} h={5} />
+          </Box>
+          <Box>
+            <Text fontSize="lg" fontWeight="bold" color={textColor}>
+              Class Announcements & Stream
+            </Text>
+
+            <Text fontSize="xs" color={metaColor}>
+              Broadcast updates to all enrolled students
+            </Text>
+          </Box>
+        </HStack>
+        <Badge colorScheme="blue" borderRadius="full" px={3} py={1} fontSize="xs" fontWeight="bold">
+          {messages.length} Posts
+        </Badge>
+      </HStack>
+
+      <VStack spacing={4} align="stretch" flexGrow={1} overflowY="auto" pr={1} pb={2}>
         {isLoadingMessages ? (
-          <Flex justify="center" align="center" minH="200px" flexGrow={1}>
-            <Spinner size="lg" color={messageInputFocusBorder} />
+          <Flex justify="center" align="center" minH="250px" flexGrow={1}>
+            <VStack spacing={3}>
+              <Spinner size="xl" color="blue.500" thickness="3px" />
+              <Text fontSize="sm" color={metaColor}>
+                Loading announcements...
+              </Text>
+            </VStack>
           </Flex>
         ) : messages.length === 0 ? (
           <VStack
             spacing={3}
-            py={10}
-            color={emptyStateColor}
+            py={12}
+            color={metaColor}
             textAlign="center"
             flexGrow={1}
             justify="center"
           >
-            <Icon
-              as={FiMessageCircle}
-              w={16}
-              h={16}
-              color={emptyStateIconColor}
-            />
-            <Text fontSize="lg" fontWeight="medium">
-              No messages yet.
+            <Icon as={FiMessageCircle} w={12} h={12} color={emptyIconColor} />
+            <Text fontSize="lg" fontWeight="semibold" color={textColor}>
+              No announcements posted yet
             </Text>
-            <Text>Be the first to say something!</Text>
+            <Text fontSize="sm">
+              Use the box below to publish your first announcement to students.
+            </Text>
           </VStack>
         ) : (
-          <VStack spacing={4} align="stretch" flexGrow={1} pb={4}>
-            {" "}
-            {/* Added padding bottom */}
+          <AnimatePresence initial={false}>
             {messages.map((msg) => (
-              <Card
+              <MotionBox
                 key={msg._id}
-                bg={messageBubbleBg}
-                borderRadius="xl"
-                boxShadow="sm"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
                 p={4}
-                maxW="85%"
-                alignSelf={
-                  msg.postedBy?.name === "You" ? "flex-end" : "flex-start"
-                }
+                borderRadius="xl"
+                borderWidth="1px"
+                borderColor={bubbleBorder}
+                bg={teacherBubbleBg}
+                boxShadow="sm"
               >
-                <CardBody p={0}>
-                  <HStack justify="space-between" mb={1} align="flex-start">
-                    <HStack spacing={2}>
-                      <Avatar
-                        size="xs"
-                        name={msg.postedBy?.name || "Instructor"}
-                        bg={avatarBg}
-                        color={avatarBgColor}
-                      />
-                      <Text
-                        fontWeight="bold"
-                        fontSize="sm"
-                        color={messageBubbleColor}
-                      >
-                        {msg.postedBy?.name || "Instructor"}
-                      </Text>
-                    </HStack>
-                    <Text fontSize="xs" color={messageMetaColor} mt={0}>
-                      {" "}
-                      {/* Adjusted margin */}
+                <HStack justify="space-between" mb={2}>
+                  <HStack spacing={2.5}>
+                    <Avatar
+                      size="sm"
+                      name={msg.postedBy?.name || "Teacher"}
+                      src={msg.postedBy?.avatar}
+                      bg="blue.600"
+                      color="white"
+                    />
+                    <Box>
+                      <HStack spacing={2}>
+                        <Text fontWeight="bold" fontSize="sm" color={textColor}>
+                          {msg.postedBy?.name || "Teacher"}
+                        </Text>
+                        <Badge colorScheme="teal" fontSize="9px" px={2} borderRadius="full">
+                          Teacher
+                        </Badge>
+                      </HStack>
+                    </Box>
+                  </HStack>
+
+                  <HStack spacing={1} color={metaColor} fontSize="xs">
+                    <Icon as={FiClock} w={3.5} h={3.5} />
+                    <Text>
                       {new Date(msg.createdAt).toLocaleString("en-US", {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -226,35 +244,26 @@ export default function CourseMessages({ courseId }: { courseId: string }) {
                       })}
                     </Text>
                   </HStack>
-                  <Text
-                    mt={1}
-                    fontSize="md"
-                    color={messageBubbleColor}
-                    lineHeight="short"
-                  >
-                    {msg.content}
-                  </Text>
-                </CardBody>
-              </Card>
+                </HStack>
+
+                <Text fontSize="sm" color={textColor} lineHeight="relaxed" whiteSpace="pre-wrap" pl={1}>
+                  {msg.content}
+                </Text>
+              </MotionBox>
             ))}
-            <div ref={messagesEndRef} />
-          </VStack>
+          </AnimatePresence>
         )}
+        <div ref={messagesEndRef} />
       </VStack>
 
-      {/* Message Input Area */}
-      <Box pt={4}>
-        {" "}
-        <InputGroup size="lg" borderRadius="xl">
+      {/* Input Box */}
+      <Box pt={4} borderTopWidth="1px" borderColor={containerBorder}>
+        <VStack spacing={3}>
           <Textarea
-            placeholder="Type your message here..."
+            placeholder="Share an announcement or update with the class..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            pr="4.5rem"
-            minH="unset"
-            h="auto"
-            rows={2}
-            resize="vertical"
+            rows={3}
             bg={messageInputBg}
             color={messageInputColor}
             borderColor={messageInputBorder}
@@ -264,23 +273,24 @@ export default function CourseMessages({ courseId }: { courseId: string }) {
               borderColor: messageInputFocusBorder,
               boxShadow: `0 0 0 1px ${messageInputFocusBorder}`,
             }}
+            fontSize="sm"
           />
-          <InputRightElement width="4.5rem" height="100%" pr={2}>
+          <Flex justify="flex-end" w="100%">
             <Button
-              colorScheme={sendButtonColorScheme}
+              colorScheme="blue"
               onClick={handlePostMessage}
               isDisabled={!newMessage.trim() || isPostingMessage}
               isLoading={isPostingMessage}
-              loadingText=""
+              leftIcon={<FiSend />}
               size="md"
-              borderRadius="lg"
-              boxShadow="sm"
-              _hover={{ boxShadow: "md" }}
+              borderRadius="xl"
+              px={6}
+              boxShadow="0 4px 12px rgba(49, 130, 206, 0.3)"
             >
-              Send
+              Post Announcement
             </Button>
-          </InputRightElement>
-        </InputGroup>
+          </Flex>
+        </VStack>
       </Box>
     </Box>
   );

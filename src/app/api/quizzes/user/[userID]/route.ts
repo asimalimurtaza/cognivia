@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
-
-const LAMBDA_QUIZ_URL =
-    process.env.LAMBDA_QUIZ_URL || "";
+import connectDB from "@/lib/mongodb";
+import Quiz from "@/models/Quiz";
 
 export async function GET(
   req: NextRequest,
@@ -11,36 +10,23 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const token = session?.user?.accessToken;
-    const { userID } = params;
-
-    if (!token) {
+    if (!session || !session.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    if (session?.user?.id !== userID) {
+    const { userID } = params;
+
+    if (session.user.id !== userID) {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 
-    const lambdaRes = await fetch(`${LAMBDA_QUIZ_URL}?userID=${session.user.id}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${session.user.accessToken}`,
-      },
-    });
+    await connectDB();
 
-    const data = await lambdaRes.json();
+    const quizzes = await Quiz.find({ userID }).sort({ createdAt: -1 });
 
-    if (!lambdaRes.ok) {
-      return NextResponse.json(
-        { error: "Lambda error", details: data },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json(data, { status: 200 });
+    return NextResponse.json({ quizzes }, { status: 200 });
   } catch (err) {
-    console.error("Proxy Error:", err);
+    console.error("Quizzes Fetch Error:", err);
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }
