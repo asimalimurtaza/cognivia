@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -6,9 +7,7 @@ import {
   Heading,
   Text,
   Button,
-  Stack,
   Flex,
-  Spacer,
   useToast,
   useDisclosure,
   AlertDialog,
@@ -19,15 +18,40 @@ import {
   AlertDialogFooter,
   Spinner,
   useColorModeValue,
-  Icon,
+  Badge,
+  HStack,
+  VStack,
+  Card,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
 } from "@chakra-ui/react";
-import { FaRegFileAlt, FaVideo } from "react-icons/fa";
+import {
+  FaRegFileAlt,
+  FaVideo,
+} from "react-icons/fa";
+import {
+  FiArrowLeft,
+  FiLogOut,
+  FiCalendar,
+  FiDownload,
+  FiPlayCircle,
+  FiMessageCircle,
+  FiFileText,
+} from "react-icons/fi";
 import StudentCourseMessages from "@/components/StudentCourseMessages";
+import { motion } from "framer-motion";
+
+const MotionBox = motion(Box);
 
 interface Course {
   _id: string;
   title: string;
   description: string;
+  subject?: string;
+  level?: string;
   liveClasses?: string[];
   createdAt?: string;
   messages?: string[];
@@ -36,6 +60,7 @@ interface Course {
     title: string;
     description?: string;
     dueDate: string;
+    fileUrl?: string;
   }[];
 }
 
@@ -58,30 +83,18 @@ export default function CourseDetailPage() {
   const cancelRef = useRef<HTMLButtonElement>(null);
   const [liveClasses, setLiveClasses] = useState<LiveClass[]>([]);
 
-  // Color Mode Values
+  // Color Mode Tokens
   const pageBg = useColorModeValue("gray.50", "gray.900");
-  const textColor = useColorModeValue("gray.800", "gray.100");
-  const headingColor = useColorModeValue("gray.800", "whiteAlpha.900");
+  const headingColor = useColorModeValue("gray.800", "white");
   const descriptionColor = useColorModeValue("gray.600", "gray.300");
-  const cardBg = useColorModeValue("white", "gray.800");
-  const cardBorder = useColorModeValue("gray.100", "gray.700");
-  const cardShadow = useColorModeValue("md", "dark-lg");
-  const unenrollButtonScheme = "red";
-  const liveClassButtonScheme = "blue";
-  const assignmentButtonScheme = "green";
-  const cancelButtonScheme = "gray";
-  const alertDialogBg = useColorModeValue("white", "gray.800");
-  const alertDialogHeaderColor = useColorModeValue(
-    "gray.800",
-    "whiteAlpha.900"
+  const cardBg = useColorModeValue("white", "gray.850");
+  const itemBg = useColorModeValue("gray.50", "gray.800");
+  const borderColor = useColorModeValue("gray.150", "gray.750");
+
+  const heroGradient = useColorModeValue(
+    "linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)",
+    "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
   );
-  const alertDialogBodyColor = useColorModeValue("gray.700", "gray.200");
-  const hoverBg = useColorModeValue("gray.50", "gray.750");
-  const unenrollHoverBg = useColorModeValue("red.600", "red.400");
-  const liveClassHoverBg = useColorModeValue("blue.600", "blue.400");
-  const assignmentHoverBg = useColorModeValue("green.600", "green.400");
-  const cancelHoverBg = useColorModeValue("gray.100", "gray.700");
-  const alertOverlayBg = useColorModeValue("blackAlpha.300", "blackAlpha.600");
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -97,13 +110,12 @@ export default function CourseDetailPage() {
           const liveClassPromises = data.liveClasses.map(
             async (lcId: string) => {
               const lcRes = await fetch(`/api/live-classes/${lcId}`);
-              if (!lcRes.ok)
-                throw new Error(`Failed to fetch live class ${lcId}`);
+              if (!lcRes.ok) return null;
               return await lcRes.json();
             }
           );
           const liveClassDetails = await Promise.all(liveClassPromises);
-          setLiveClasses(liveClassDetails);
+          setLiveClasses(liveClassDetails.filter(Boolean));
         } else {
           setLiveClasses([]);
         }
@@ -114,7 +126,7 @@ export default function CourseDetailPage() {
           title: "Error loading course",
           description: error.message || "Could not retrieve course details.",
           status: "error",
-          duration: 5000,
+          duration: 4000,
           isClosable: true,
         });
       } finally {
@@ -144,10 +156,9 @@ export default function CourseDetailPage() {
         isClosable: true,
       });
 
-      router.push("/dashboard");
+      router.push("/dashboard/courses");
     } catch (err: unknown) {
       const error = err as Error;
-      console.error(error);
       toast({
         title: "Error",
         description: error.message || "Could not unenroll from course.",
@@ -164,35 +175,25 @@ export default function CourseDetailPage() {
   if (isLoadingContent) {
     return (
       <Flex justify="center" align="center" minH="80vh" bg={pageBg}>
-        <Spinner size="xl" color="blue.500" thickness="4px" />
+        <VStack spacing={3}>
+          <Spinner size="xl" color="blue.500" thickness="4px" />
+          <Text color={descriptionColor}>Loading course workspace...</Text>
+        </VStack>
       </Flex>
     );
   }
 
   if (!course) {
     return (
-      <Flex
-        justify="center"
-        align="center"
-        minH="80vh"
-        bg={pageBg}
-        direction="column"
-        p={8}
-      >
+      <Flex justify="center" align="center" minH="80vh" bg={pageBg} direction="column" p={8}>
         <Heading size="lg" color={headingColor} mb={4}>
           Course Not Found
         </Heading>
         <Text color={descriptionColor} mb={6}>
-          The course you are looking for does not exist or you do not have
-          access.
+          The course you are looking for does not exist or you are not enrolled.
         </Text>
-        <Button
-          colorScheme="blue"
-          onClick={() => router.push("/dashboard")}
-          borderRadius="full"
-          shadow="md"
-        >
-          Go to My Classes
+        <Button colorScheme="blue" onClick={() => router.push("/dashboard/courses")} borderRadius="xl">
+          Back to My Classes
         </Button>
       </Flex>
     );
@@ -200,261 +201,319 @@ export default function CourseDetailPage() {
 
   return (
     <Box p={{ base: 4, md: 8 }} maxW="7xl" mx="auto" bg={pageBg} minH="100vh">
-      <Flex mb={6} alignItems="center" flexWrap="wrap">
-        <Heading
-          size="xl"
-          color={headingColor}
-          fontWeight="bold"
-          mr={4}
-          mb={{ base: 4, md: 0 }}
-        >
-          {course.title}
-        </Heading>
-
-        <Spacer />
-        <Button
-          colorScheme={unenrollButtonScheme}
-          size="md"
-          onClick={onOpen}
-          isLoading={isUnenrolling}
-          loadingText="Unenrolling..."
-          borderRadius="full"
-          shadow="md"
-          _hover={{
-            shadow: "lg",
-            transform: "translateY(-1px)",
-            bg: unenrollHoverBg,
-          }}
-          transition="all 0.2s ease-in-out"
-        >
-          Unenroll
-        </Button>
-      </Flex>
-
-      <Box
-        p={6}
+      {/* Navigation & Back */}
+      <Button
+        leftIcon={<FiArrowLeft />}
+        variant="ghost"
+        mb={4}
+        onClick={() => router.push("/dashboard/courses")}
         borderRadius="xl"
-        bg={cardBg}
-        borderWidth="1px"
-        borderColor={cardBorder}
-        shadow={cardShadow}
+      >
+        Back to My Classes
+      </Button>
+
+      {/* Course Hero Banner */}
+      <MotionBox
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        bg={heroGradient}
+        borderRadius="3xl"
+        p={{ base: 6, md: 8 }}
+        color="white"
+        boxShadow="xl"
         mb={8}
       >
-        <Text fontSize="lg" color={descriptionColor}>
-          {course.description}
-        </Text>
-        <Text fontSize="md" color={descriptionColor} flex="1">
-          {new Date(course?.createdAt || "").toLocaleString() ||
-            "No creation date available."}
-        </Text>
-      </Box>
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          justify="space-between"
+          align={{ base: "flex-start", md: "center" }}
+          gap={6}
+        >
+          <VStack align="flex-start" spacing={3} flex={1}>
+            <HStack spacing={2}>
+              <Badge bg="whiteAlpha.300" color="white" px={3} py={1} borderRadius="full" fontSize="xs">
+                {course.subject || "Course Workspace"}
+              </Badge>
+              {course.level && (
+                <Badge colorScheme="blue" px={3} py={1} borderRadius="full" fontSize="xs">
+                  {course.level}
+                </Badge>
+              )}
+            </HStack>
 
-      <Box mb={8}>
-        <Heading size="lg" mb={4} color={headingColor} fontWeight="semibold">
-          <Icon as={FaVideo} mr={3} color={`${liveClassButtonScheme}.500`} />
-          Upcoming Live Classes
-        </Heading>
-        <Stack spacing={4}>
-          {liveClasses.length > 0 ? (
-            liveClasses.map((lc) => (
-              <Box
-                key={lc._id}
-                borderWidth="1px"
-                borderRadius="lg"
-                p={4}
-                bg={cardBg}
-                borderColor={cardBorder}
-                shadow="sm"
-                _hover={{
-                  shadow: "md",
-                  transform: "translateY(-2px)",
-                  bg: hoverBg,
-                }}
-                transition="all 0.2s ease-in-out"
-              >
-                <Text fontSize="md" fontWeight="bold" color={textColor} mb={1}>
-                  {lc.title || "Untitled Live Class"}
+            <Heading size="xl" fontWeight="extrabold">
+              {course.title}
+            </Heading>
+
+            <Text color="gray.200" fontSize="sm" maxW="3xl">
+              {course.description || "Welcome to your class workspace."}
+            </Text>
+          </VStack>
+
+          <Button
+            leftIcon={<FiLogOut />}
+            colorScheme="red"
+            variant="solid"
+            borderRadius="xl"
+            onClick={onOpen}
+            isLoading={isUnenrolling}
+            px={6}
+          >
+            Unenroll
+          </Button>
+        </Flex>
+      </MotionBox>
+
+      {/* Active Live Class Alert Banner */}
+      {liveClasses.length > 0 && (
+        <Card
+          mb={8}
+          bg="linear-gradient(135deg, #15803d 0%, #22c55e 100%)"
+          color="white"
+          borderRadius="2xl"
+          p={5}
+          boxShadow="lg"
+        >
+          <Flex direction={{ base: "column", sm: "row" }} justify="space-between" align="center" gap={4}>
+            <HStack spacing={4}>
+              <Flex w={12} h={12} bg="whiteAlpha.300" borderRadius="full" align="center" justify="center">
+                <FaVideo size={20} />
+              </Flex>
+              <Box>
+                <HStack spacing={2}>
+                  <Badge colorScheme="red" variant="solid" fontSize="10px" borderRadius="full" px={2}>
+                    LIVE NOW
+                  </Badge>
+                  <Heading size="sm" color="white">
+                    {liveClasses[0].title}
+                  </Heading>
+                </HStack>
+                <Text fontSize="xs" opacity={0.9} mt={1}>
+                  Instructor has launched a live video session
                 </Text>
-                <Text fontSize="sm" color={descriptionColor}>
-                  Scheduled for: {new Date(lc.scheduledAt).toLocaleString()}
-                </Text>
-                <Button
-                  mt={3}
-                  size="sm"
-                  colorScheme={liveClassButtonScheme}
-                  onClick={() => router.push(`/live-class/${lc.channelName}`)}
-                  borderRadius="full"
-                  shadow="xs"
-                  _hover={{
-                    shadow: "md",
-                    transform: "translateY(-1px)",
-                    bg: liveClassHoverBg,
-                  }}
-                  transition="all 0.2s ease-in-out"
-                >
-                  Join Class
-                </Button>
               </Box>
-            ))
-          ) : (
-            <Box
-              p={4}
-              borderRadius="lg"
-              bg={cardBg}
-              borderWidth="1px"
-              borderColor={cardBorder}
-              shadow="sm"
+            </HStack>
+
+            <Button
+              leftIcon={<FiPlayCircle />}
+              colorScheme="whiteAlpha"
+              bg="white"
+              color="green.800"
+              _hover={{ bg: "gray.100" }}
+              borderRadius="xl"
+              onClick={() => window.open(`/live-class/${liveClasses[0].channelName}`, "_blank")}
             >
-              <Text color={descriptionColor} fontStyle="italic">
-                No upcoming live classes for this course.
+              Join Live Class
+            </Button>
+          </Flex>
+        </Card>
+      )}
+
+      {/* Main Tabbed Interface */}
+      <Tabs variant="soft-rounded" colorScheme="blue">
+        <TabList mb={6} overflowX="auto" pb={2} gap={2}>
+          <Tab borderRadius="xl" fontWeight="bold" fontSize="sm">
+            <HStack spacing={2}>
+              <FiMessageCircle />
+              <Text>Announcements & Stream</Text>
+            </HStack>
+          </Tab>
+          <Tab borderRadius="xl" fontWeight="bold" fontSize="sm">
+            <HStack spacing={2}>
+              <FiFileText />
+              <Text>Assignments ({course.assignments?.length || 0})</Text>
+            </HStack>
+          </Tab>
+          <Tab borderRadius="xl" fontWeight="bold" fontSize="sm">
+            <HStack spacing={2}>
+              <FaVideo />
+              <Text>Live Class Sessions ({liveClasses.length})</Text>
+            </HStack>
+          </Tab>
+        </TabList>
+
+        <TabPanels>
+          {/* TAB 1: Stream / Messages */}
+          <TabPanel p={0}>
+            <StudentCourseMessages courseId={course._id} />
+          </TabPanel>
+
+          {/* TAB 2: Assignments */}
+          <TabPanel p={0}>
+            <Card bg={cardBg} borderRadius="2xl" borderWidth="1px" borderColor={borderColor} p={{ base: 4, md: 6 }}>
+              <Heading size="md" color={headingColor} mb={1}>
+                Assignments & Homework
+              </Heading>
+              <Text fontSize="xs" color={descriptionColor} mb={6}>
+                Download instructions and check deadline dates
               </Text>
-            </Box>
-          )}
-        </Stack>
-      </Box>
 
-      <Box mb={8}>
-        <Heading size="lg" mb={4} color={headingColor} fontWeight="semibold">
-          Course Messages
-        </Heading>
-        <StudentCourseMessages courseId={id} />
-      </Box>
+              {course.assignments && course.assignments.length > 0 ? (
+                <VStack spacing={4} align="stretch">
+                  {course.assignments.map((assignment) => (
+                    <Card
+                      key={assignment._id}
+                      p={5}
+                      borderRadius="xl"
+                      borderWidth="1px"
+                      borderColor={borderColor}
+                      bg={itemBg}
+                      boxShadow="sm"
+                    >
+                      <Flex justify="space-between" align="center">
+                        <Box flex={1}>
+                          <Heading size="sm" color={headingColor} mb={1}>
+                            {assignment.title}
+                          </Heading>
+                          <Text fontSize="xs" color={descriptionColor} noOfLines={2} mb={2}>
+                            {assignment.description || "No description provided."}
+                          </Text>
+                          <HStack spacing={1} fontSize="xs" color="gray.500">
+                            <FiCalendar />
+                            <Text>
+                              Due:{" "}
+                              {new Date(assignment.dueDate).toLocaleDateString("en-US", {
+                                weekday: "short",
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </Text>
+                          </HStack>
+                        </Box>
 
-      <Box>
-        <Heading size="lg" mb={4} color={headingColor} fontWeight="semibold">
-          <Icon
-            as={FaRegFileAlt}
-            mr={3}
-            color={`${assignmentButtonScheme}.500`}
-          />
-          Assignments
-        </Heading>
-        <Stack spacing={4}>
-          {course.assignments && course.assignments.length > 0 ? (
-            course.assignments.map((a) => (
-              <Box
-                key={a._id}
-                borderWidth="1px"
-                borderRadius="lg"
-                p={4}
-                bg={cardBg}
-                borderColor={cardBorder}
-                shadow="sm"
-                _hover={{
-                  shadow: "md",
-                  transform: "translateY(-2px)",
-                  bg: hoverBg,
-                }}
-                transition="all 0.2s ease-in-out"
-              >
-                <Text fontWeight="bold" fontSize="md" color={textColor} mb={1}>
-                  {a.title}
-                </Text>
-                <Text
-                  fontSize="sm"
-                  color={descriptionColor}
-                  mb={1}
-                  noOfLines={1}
-                >
-                  {a.description || "No description provided."}
-                </Text>
-                <Text fontSize="xs" color={descriptionColor}>
-                  Due: {new Date(a.dueDate).toLocaleDateString()}
-                </Text>
-                <Button
-                  mt={3}
-                  size="sm"
-                  colorScheme={assignmentButtonScheme}
-                  onClick={() =>
-                    router.push(`/dashboard/courses/${id}/assignments/${a._id}`)
-                  }
-                  borderRadius="full"
-                  shadow="xs"
-                  _hover={{
-                    shadow: "md",
-                    transform: "translateY(-1px)",
-                    bg: assignmentHoverBg,
-                  }}
-                  transition="all 0.2s ease-in-out"
-                >
-                  Open Assignment
-                </Button>
-              </Box>
-            ))
-          ) : (
-            <Box
-              p={4}
-              borderRadius="lg"
-              bg={cardBg}
-              borderWidth="1px"
-              borderColor={cardBorder}
-              shadow="sm"
-            >
-              <Text color={descriptionColor} fontStyle="italic">
-                No assignments for this course yet.
+                        {assignment.fileUrl && (
+                          <Button
+                            leftIcon={<FiDownload />}
+                            size="sm"
+                            colorScheme="blue"
+                            borderRadius="lg"
+                            onClick={() => window.open(assignment.fileUrl, "_blank")}
+                          >
+                            Download Resource
+                          </Button>
+                        )}
+                      </Flex>
+                    </Card>
+                  ))}
+                </VStack>
+              ) : (
+                <Box textAlign="center" py={12}>
+                  <VStack spacing={3}>
+                    <FaRegFileAlt size={36} color="#a0aec0" />
+                    <Text fontSize="md" fontWeight="semibold" color={headingColor}>
+                      No assignments currently assigned
+                    </Text>
+                    <Text fontSize="xs" color={descriptionColor}>
+                      Your teacher hasn&apos;t posted any assignments yet.
+                    </Text>
+                  </VStack>
+                </Box>
+              )}
+            </Card>
+          </TabPanel>
+
+          {/* TAB 3: Live Class Sessions */}
+          <TabPanel p={0}>
+            <Card bg={cardBg} borderRadius="2xl" borderWidth="1px" borderColor={borderColor} p={{ base: 4, md: 6 }}>
+              <Heading size="md" color={headingColor} mb={1}>
+                Live Video Class Sessions
+              </Heading>
+              <Text fontSize="xs" color={descriptionColor} mb={6}>
+                Scheduled live streams and video meeting rooms for this course
               </Text>
-            </Box>
-          )}
-        </Stack>
-      </Box>
 
+              {liveClasses.length > 0 ? (
+                <VStack spacing={4} align="stretch">
+                  {liveClasses.map((lc) => (
+                    <Card
+                      key={lc._id}
+                      p={5}
+                      borderRadius="xl"
+                      borderWidth="1px"
+                      borderColor={borderColor}
+                      bg={itemBg}
+                    >
+                      <Flex justify="space-between" align="center">
+                        <Box flex={1}>
+                          <Heading size="sm" color={headingColor} mb={1}>
+                            {lc.title}
+                          </Heading>
+                          <HStack spacing={1} fontSize="xs" color="gray.500">
+                            <FiCalendar />
+                            <Text>
+                              Scheduled:{" "}
+                              {new Date(lc.scheduledAt).toLocaleString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </Text>
+                          </HStack>
+                        </Box>
+
+                        <Button
+                          leftIcon={<FiPlayCircle />}
+                          colorScheme="green"
+                          size="md"
+                          borderRadius="xl"
+                          onClick={() => window.open(`/live-class/${lc.channelName}`, "_blank")}
+                        >
+                          Join Room
+                        </Button>
+                      </Flex>
+                    </Card>
+                  ))}
+                </VStack>
+              ) : (
+                <Box textAlign="center" py={12}>
+                  <VStack spacing={3}>
+                    <FaVideo size={36} color="#a0aec0" />
+                    <Text fontSize="md" fontWeight="semibold" color={headingColor}>
+                      No live sessions scheduled
+                    </Text>
+                    <Text fontSize="xs" color={descriptionColor}>
+                      Live class notifications will appear here when scheduled by your teacher.
+                    </Text>
+                  </VStack>
+                </Box>
+              )}
+            </Card>
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
+
+      {/* Unenroll Confirmation Alert */}
       <AlertDialog
         isOpen={isOpen}
         leastDestructiveRef={cancelRef}
         onClose={onClose}
         isCentered
       >
-        <AlertDialogOverlay bg={alertOverlayBg} />
-        <AlertDialogContent
-          bg={alertDialogBg}
-          borderRadius="xl"
-          shadow="2xl"
-          p={4}
-        >
-          <AlertDialogHeader
-            fontSize="xl"
-            fontWeight="bold"
-            color={alertDialogHeaderColor}
-          >
-            Unenroll from Course
-          </AlertDialogHeader>
-
-          <AlertDialogBody color={alertDialogBodyColor}>
-            Are you sure you want to unenroll from &qout;{course.title}&qout;?
-            You will lose access to its content and assignments. This action
-            cannot be undone.
-          </AlertDialogBody>
-
-          <AlertDialogFooter>
-            <Button
-              ref={cancelRef}
-              onClick={onClose}
-              variant="ghost"
-              colorScheme={cancelButtonScheme}
-              borderRadius="full"
-              _hover={{ bg: cancelHoverBg }}
-            >
-              Cancel
-            </Button>
-            <Button
-              colorScheme={unenrollButtonScheme}
-              onClick={handleUnenroll}
-              ml={3}
-              isLoading={isUnenrolling}
-              loadingText="Unenrolling..."
-              borderRadius="full"
-              shadow="md"
-              _hover={{
-                shadow: "lg",
-                transform: "translateY(-1px)",
-                bg: unenrollHoverBg,
-              }}
-              transition="all 0.2s ease-in-out"
-            >
-              Unenroll
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
+        <AlertDialogOverlay backdropFilter="blur(4px)" bg="blackAlpha.600">
+          <AlertDialogContent borderRadius="2xl" bg={cardBg}>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Unenroll from Class
+            </AlertDialogHeader>
+            <AlertDialogBody>
+              Are you sure you want to unenroll from &quot;{course.title}&quot;? You will lose access to class announcements and materials.
+            </AlertDialogBody>
+            <AlertDialogFooter gap={3}>
+              <Button ref={cancelRef} onClick={onClose} variant="ghost" borderRadius="xl">
+                Cancel
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={handleUnenroll}
+                isLoading={isUnenrolling}
+                borderRadius="xl"
+              >
+                Unenroll
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
       </AlertDialog>
     </Box>
   );
