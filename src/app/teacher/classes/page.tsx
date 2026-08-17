@@ -47,12 +47,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import {
-  DeleteIcon,
-  EditIcon,
-  CopyIcon,
-  SearchIcon,
-} from "@chakra-ui/icons";
+import { DeleteIcon, EditIcon, CopyIcon, SearchIcon } from "@chakra-ui/icons";
 import {
   FiPlus,
   FiBook,
@@ -147,7 +142,7 @@ export default function CoursesPage() {
   const fetchCourses = async () => {
     try {
       const res = await fetch(
-        "/api/courses?populate=assignments,students,createdBy"
+        "/api/courses?populate=assignments,students,createdBy",
       );
       const data = await res.json();
       setCourses(Array.isArray(data) ? data : []);
@@ -166,7 +161,9 @@ export default function CoursesPage() {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -273,11 +270,11 @@ export default function CoursesPage() {
 
   const totalStudents = courses.reduce(
     (acc, curr) => acc + (curr.students?.length || 0),
-    0
+    0,
   );
   const totalAssignments = courses.reduce(
     (acc, curr) => acc + (curr.assignments?.length || 0),
-    0
+    0,
   );
 
   return (
@@ -316,32 +313,62 @@ export default function CoursesPage() {
 
         {/* Minimal Metrics Bar */}
         <SimpleGrid columns={{ base: 1, sm: 3 }} spacing={4}>
-          <Card bg={cardBg} borderRadius="xl" borderWidth="1px" borderColor={borderColor} p={4}>
+          <Card
+            bg={cardBg}
+            borderRadius="xl"
+            borderWidth="1px"
+            borderColor={borderColor}
+            p={4}
+          >
             <HStack spacing={3}>
               <FiBookOpen size={18} color="#718096" />
               <Box>
-                <Text fontSize="xl" fontWeight="bold" color={headingColor}>{courses.length}</Text>
-                <Text fontSize="xs" color={lightTextColor}>Total Classes</Text>
+                <Text fontSize="xl" fontWeight="bold" color={headingColor}>
+                  {courses.length}
+                </Text>
+                <Text fontSize="xs" color={lightTextColor}>
+                  Total Classes
+                </Text>
               </Box>
             </HStack>
           </Card>
 
-          <Card bg={cardBg} borderRadius="xl" borderWidth="1px" borderColor={borderColor} p={4}>
+          <Card
+            bg={cardBg}
+            borderRadius="xl"
+            borderWidth="1px"
+            borderColor={borderColor}
+            p={4}
+          >
             <HStack spacing={3}>
               <FiUsers size={18} color="#718096" />
               <Box>
-                <Text fontSize="xl" fontWeight="bold" color={headingColor}>{totalStudents}</Text>
-                <Text fontSize="xs" color={lightTextColor}>Enrolled Students</Text>
+                <Text fontSize="xl" fontWeight="bold" color={headingColor}>
+                  {totalStudents}
+                </Text>
+                <Text fontSize="xs" color={lightTextColor}>
+                  Enrolled Students
+                </Text>
               </Box>
             </HStack>
           </Card>
 
-          <Card bg={cardBg} borderRadius="xl" borderWidth="1px" borderColor={borderColor} p={4}>
+          <Card
+            bg={cardBg}
+            borderRadius="xl"
+            borderWidth="1px"
+            borderColor={borderColor}
+            p={4}
+          >
             <HStack spacing={3}>
               <FiLayers size={18} color="#718096" />
               <Box>
-                <Text fontSize="xl" fontWeight="bold" color={headingColor}>{totalAssignments}</Text>
-                <Text fontSize="xs" color={lightTextColor}>Published Assignments</Text>
+                <Text fontSize="xl" fontWeight="bold" color={headingColor}>
+                  {totalAssignments}
+                </Text>
+                <Text fontSize="xs" color={lightTextColor}>
+                  Published Assignments
+                </Text>
               </Box>
             </HStack>
           </Card>
@@ -411,10 +438,17 @@ export default function CoursesPage() {
                 {searchQuery ? "No matching classes" : "No classes created"}
               </Heading>
               <Text color={lightTextColor} fontSize="xs" maxW="md">
-                Create a class to generate a join code and start publishing assignments.
+                Create a class to generate a join code and start publishing
+                assignments.
               </Text>
               {!searchQuery && (
-                <Button size="sm" leftIcon={<FiPlus />} colorScheme="gray" borderRadius="md" onClick={onOpen}>
+                <Button
+                  size="sm"
+                  leftIcon={<FiPlus />}
+                  colorScheme="gray"
+                  borderRadius="md"
+                  onClick={onOpen}
+                >
                   Create Class
                 </Button>
               )}
@@ -457,10 +491,16 @@ export default function CoursesPage() {
                           size="xs"
                           borderRadius="md"
                         />
-                        <MenuList bg={cardBg} borderColor={borderColor} fontSize="xs">
+                        <MenuList
+                          bg={cardBg}
+                          borderColor={borderColor}
+                          fontSize="xs"
+                        >
                           <MenuItem
                             icon={<EditIcon />}
-                            onClick={() => router.push(`/teacher/classes/${course._id}/edit`)}
+                            onClick={() =>
+                              router.push(`/teacher/classes/${course._id}/edit`)
+                            }
                           >
                             Edit Class
                           </MenuItem>
@@ -468,7 +508,10 @@ export default function CoursesPage() {
                             icon={<DeleteIcon />}
                             color="red.500"
                             onClick={() => {
-                              setItemToDelete({ id: course._id, type: "course" });
+                              setItemToDelete({
+                                id: course._id,
+                                type: "course",
+                              });
                               setIsDeleteAlertOpen(true);
                             }}
                           >
@@ -486,7 +529,13 @@ export default function CoursesPage() {
                     {course.level || "All Levels"}
                   </Text>
 
-                  <Text fontSize="xs" color={textColor} noOfLines={2} minH="32px" mb={4}>
+                  <Text
+                    fontSize="xs"
+                    color={textColor}
+                    noOfLines={2}
+                    minH="32px"
+                    mb={4}
+                  >
                     {course.description || "No description provided."}
                   </Text>
 
@@ -502,32 +551,59 @@ export default function CoursesPage() {
                   >
                     <Flex justify="space-between" align="center">
                       <Box>
-                        <Text fontSize="9px" uppercase tracking="wider" color={lightTextColor}>
+                        <Text fontSize="9px" color={lightTextColor}>
                           Join Code
                         </Text>
-                        <Text fontSize="xs" fontWeight="bold" letterSpacing="1px">
+                        <Text
+                          fontSize="xs"
+                          fontWeight="bold"
+                          letterSpacing="1px"
+                        >
                           {course.joinCode}
                         </Text>
                       </Box>
-                      <Tooltip label={copiedCodeId === course._id ? "Copied!" : "Copy Code"}>
+                      <Tooltip
+                        label={
+                          copiedCodeId === course._id ? "Copied!" : "Copy Code"
+                        }
+                      >
                         <IconButton
                           aria-label="Copy Code"
-                          icon={copiedCodeId === course._id ? <FiCheck /> : <CopyIcon />}
+                          icon={
+                            copiedCodeId === course._id ? (
+                              <FiCheck />
+                            ) : (
+                              <CopyIcon />
+                            )
+                          }
                           size="xs"
                           variant="ghost"
-                          onClick={() => handleCopyCode(course.joinCode, course._id)}
+                          onClick={() =>
+                            handleCopyCode(course.joinCode, course._id)
+                          }
                         />
                       </Tooltip>
                     </Flex>
                   </Box>
 
                   {/* Student & Assignment Counters */}
-                  <Flex justify="space-between" align="center" pt={3} borderTop="1px solid" borderColor={borderColor}>
+                  <Flex
+                    justify="space-between"
+                    align="center"
+                    pt={3}
+                    borderTop="1px solid"
+                    borderColor={borderColor}
+                  >
                     <HStack spacing={2}>
                       <AvatarGroup size="2xs" max={3}>
                         {Array.isArray(course.students) &&
                           course.students.map((st, idx) => (
-                            <Avatar key={idx} name={typeof st === "object" ? st.name : "Student"} />
+                            <Avatar
+                              key={idx}
+                              name={
+                                typeof st === "object" ? st.name : "Student"
+                              }
+                            />
                           ))}
                       </AvatarGroup>
                       <Text fontSize="11px" color={lightTextColor}>
@@ -549,9 +625,18 @@ export default function CoursesPage() {
       {/* Create Class Modal */}
       <Modal isOpen={isOpen} onClose={onClose} isCentered size="md">
         <ModalOverlay bg="blackAlpha.400" />
-        <ModalContent borderRadius="xl" overflow="hidden" bg={modalBg} borderWidth="1px" borderColor={borderColor} boxShadow="xl">
+        <ModalContent
+          borderRadius="xl"
+          overflow="hidden"
+          bg={modalBg}
+          borderWidth="1px"
+          borderColor={borderColor}
+          boxShadow="xl"
+        >
           <ModalHeader pt={6} px={6} pb={0}>
-            <Heading size="md" color={headingColor}>Create New Class</Heading>
+            <Heading size="md" color={headingColor}>
+              Create New Class
+            </Heading>
             <Text fontSize="xs" color={lightTextColor} mt={1}>
               Generate a unique course & share code with students
             </Text>
@@ -561,7 +646,9 @@ export default function CoursesPage() {
           <ModalBody p={6}>
             <VStack spacing={4}>
               <FormControl isRequired>
-                <FormLabel fontSize="xs" fontWeight="medium">Class Title</FormLabel>
+                <FormLabel fontSize="xs" fontWeight="medium">
+                  Class Title
+                </FormLabel>
                 <Input
                   name="title"
                   value={form.title}
@@ -573,7 +660,9 @@ export default function CoursesPage() {
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel fontSize="xs" fontWeight="medium">Subject</FormLabel>
+                <FormLabel fontSize="xs" fontWeight="medium">
+                  Subject
+                </FormLabel>
                 <Select
                   name="subject"
                   value={form.subject}
@@ -591,7 +680,9 @@ export default function CoursesPage() {
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel fontSize="xs" fontWeight="medium">Education Level</FormLabel>
+                <FormLabel fontSize="xs" fontWeight="medium">
+                  Education Level
+                </FormLabel>
                 <Select
                   name="level"
                   value={form.level}
@@ -608,7 +699,9 @@ export default function CoursesPage() {
               </FormControl>
 
               <FormControl>
-                <FormLabel fontSize="xs" fontWeight="medium">Description</FormLabel>
+                <FormLabel fontSize="xs" fontWeight="medium">
+                  Description
+                </FormLabel>
                 <Textarea
                   name="description"
                   value={form.description}
@@ -623,7 +716,14 @@ export default function CoursesPage() {
           </ModalBody>
 
           <ModalFooter px={6} pb={6} gap={2}>
-            <Button onClick={onClose} variant="ghost" size="sm" borderRadius="md">Cancel</Button>
+            <Button
+              onClick={onClose}
+              variant="ghost"
+              size="sm"
+              borderRadius="md"
+            >
+              Cancel
+            </Button>
             <Button
               colorScheme="gray"
               bg={btnBg}
@@ -653,13 +753,25 @@ export default function CoursesPage() {
               Delete Class
             </AlertDialogHeader>
             <AlertDialogBody fontSize="xs" color={lightTextColor}>
-              Are you sure you want to delete this class? All associated materials will be permanently removed.
+              Are you sure you want to delete this class? All associated
+              materials will be permanently removed.
             </AlertDialogBody>
             <AlertDialogFooter gap={2}>
-              <Button ref={cancelRef} onClick={() => setIsDeleteAlertOpen(false)} variant="ghost" size="sm" borderRadius="md">
+              <Button
+                ref={cancelRef}
+                onClick={() => setIsDeleteAlertOpen(false)}
+                variant="ghost"
+                size="sm"
+                borderRadius="md"
+              >
                 Cancel
               </Button>
-              <Button colorScheme="red" size="sm" onClick={handleDelete} borderRadius="md">
+              <Button
+                colorScheme="red"
+                size="sm"
+                onClick={handleDelete}
+                borderRadius="md"
+              >
                 Delete Class
               </Button>
             </AlertDialogFooter>
