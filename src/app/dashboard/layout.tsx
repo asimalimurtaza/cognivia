@@ -43,6 +43,9 @@ import {
   FiMessageSquare,
   FiBook,
   FiEdit,
+  FiLayers,
+  FiFileText,
+  FiCalendar,
 } from "react-icons/fi";
 import { IconType } from "react-icons/lib";
 import { motion, AnimatePresence } from "framer-motion";
@@ -55,6 +58,9 @@ const MotionBox = motion(Box);
 const modules = [
   { name: "Overview", icon: BiHome, path: "/dashboard" },
   { name: "Enrolled Classes", icon: MdClass, path: "/dashboard/courses" },
+  { name: "AI Flashcards", icon: FiLayers, path: "/dashboard/flashcards" },
+  { name: "Document AI", icon: FiFileText, path: "/dashboard/document-chat" },
+  { name: "AI Study Planner", icon: FiCalendar, path: "/dashboard/study-planner" },
   { name: "Quizzes", icon: FiBook, path: "/dashboard/quizzes" },
   {
     name: "Cognivia AI",
@@ -157,7 +163,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
       )}
 
       {/* Navigation Links */}
-      <VStack spacing={1} w="full" flex={1}>
+      <VStack spacing={1} w="full" flex={1} overflowY="auto">
         {modules.map((module) => (
           <NavItem
             key={module.name}

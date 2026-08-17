@@ -15,8 +15,8 @@ type GeminiApiResponse = {
   }>;
 };
 
-const GEMINI_PRIMARY_MODEL = process.env.GEMINI_PRIMARY_MODEL || "gemini-3.6-flash";
-const GEMINI_FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL || "gemini-3.6-flash";
+const GEMINI_PRIMARY_MODEL = "gemini-3.6-flash";
+const GEMINI_FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL;
 
 export async function generateGeminiContent(prompt: string): Promise<string> {
   return generateCogniviaAIChatResponse({
