@@ -27,12 +27,10 @@ import {
   useColorModeValue,
   Flex,
   IconButton,
+  ModalHeader,
 } from "@chakra-ui/react";
 import { useState, useRef, useEffect } from "react";
 import { FiUploadCloud, FiTrash2, FiCalendar, FiEdit3, FiCheckCircle } from "react-icons/fi";
-import { motion } from "framer-motion";
-
-const MotionBox = motion(Box);
 
 interface Assignment {
   _id: string;
@@ -77,15 +75,16 @@ export default function AssignmentModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
 
-  const modalBg = useColorModeValue("white", "gray.850");
-  const modalBorder = useColorModeValue("gray.100", "gray.700");
-  const headerBg = useColorModeValue("linear-gradient(135deg, #3182ce 0%, #63b3ed 100%)", "linear-gradient(135deg, #2b6cb0 0%, #3182ce 100%)");
-  const inputBg = useColorModeValue("gray.50", "gray.800");
+  const modalBg = useColorModeValue("white", "gray.800");
+  const modalBorder = useColorModeValue("gray.200", "gray.700");
+  const inputBg = useColorModeValue("white", "gray.900");
   const inputBorder = useColorModeValue("gray.200", "gray.700");
-  const focusBorder = useColorModeValue("blue.500", "blue.300");
-  const uploadAreaBg = useColorModeValue("blue.50", "whiteAlpha.50");
-  const uploadAreaBorder = useColorModeValue("blue.200", "blue.700");
+  const focusBorder = useColorModeValue("gray.400", "gray.500");
+  const uploadAreaBg = useColorModeValue("gray.50", "gray.900");
+  const uploadAreaBorder = useColorModeValue("gray.200", "gray.700");
   const labelColor = useColorModeValue("gray.700", "gray.200");
+  const headingColor = useColorModeValue("gray.800", "white");
+  const subTextColor = useColorModeValue("gray.500", "gray.400");
 
   useEffect(() => {
     if (assignmentData) {
@@ -137,7 +136,7 @@ export default function AssignmentModal({
       const data = await res.json();
       setForm((prev) => ({ ...prev, fileUrl: data.url }));
       toast({
-        title: "File uploaded successfully",
+        title: "File uploaded",
         status: "success",
         duration: 2000,
         isClosable: true,
@@ -146,7 +145,6 @@ export default function AssignmentModal({
       console.error("File upload error:", error);
       toast({
         title: "File upload failed",
-        description: "Please try again",
         status: "error",
       });
     } finally {
@@ -230,68 +228,63 @@ export default function AssignmentModal({
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} isCentered size="lg" motionPreset="slideInBottom">
-        <ModalOverlay backdropFilter="blur(8px)" bg="blackAlpha.600" />
-        <ModalContent borderRadius="2xl" overflow="hidden" bg={modalBg} borderWidth="1px" borderColor={modalBorder} boxShadow="2xl">
-          <Box bg={headerBg} p={6} color="white" position="relative">
+      <Modal isOpen={isOpen} onClose={onClose} isCentered size="lg">
+        <ModalOverlay bg="blackAlpha.400" />
+        <ModalContent borderRadius="xl" overflow="hidden" bg={modalBg} borderWidth="1px" borderColor={modalBorder} boxShadow="xl">
+          <ModalHeader pt={6} px={6} pb={0}>
             <HStack spacing={3}>
-              <Box p={2.5} bg="whiteAlpha.200" borderRadius="xl" backdropFilter="blur(4px)">
-                <Icon as={assignmentData ? FiEdit3 : FiUploadCloud} w={6} h={6} color="white" />
-              </Box>
+              <Icon as={assignmentData ? FiEdit3 : FiUploadCloud} w={5} h={5} color={headingColor} />
               <Box>
-                <Text fontSize="xl" fontWeight="bold">
+                <Text fontSize="lg" fontWeight="semibold" color={headingColor}>
                   {assignmentData ? "Edit Assignment" : "Create New Assignment"}
                 </Text>
-                <Text fontSize="xs" opacity={0.9}>
-                  {assignmentData ? "Update submission requirements & details" : "Publish new tasks for your students"}
+                <Text fontSize="xs" color={subTextColor} fontWeight="normal">
+                  {assignmentData ? "Update submission requirements" : "Publish new tasks for your class"}
                 </Text>
               </Box>
             </HStack>
-            <ModalCloseButton color="white" top={6} right={6} _hover={{ bg: "whiteAlpha.300" }} />
-          </Box>
+            <ModalCloseButton top={6} right={6} />
+          </ModalHeader>
 
           <ModalBody p={6}>
-            <VStack spacing={5} align="stretch">
+            <VStack spacing={4} align="stretch">
               <FormControl isRequired>
-                <FormLabel fontWeight="semibold" fontSize="sm" color={labelColor}>
+                <FormLabel fontWeight="medium" fontSize="xs" color={labelColor}>
                   Assignment Title
                 </FormLabel>
                 <Input
                   name="title"
                   value={form.title}
                   onChange={handleChange}
-                  placeholder="e.g. Midterm Project Guidelines"
-                  size="lg"
-                  borderRadius="xl"
+                  placeholder="Assignment title"
+                  borderRadius="md"
                   bg={inputBg}
                   borderColor={inputBorder}
-                  _hover={{ borderColor: focusBorder }}
-                  _focus={{ borderColor: focusBorder, boxShadow: `0 0 0 1px ${focusBorder}` }}
+                  _focus={{ borderColor: focusBorder }}
                 />
               </FormControl>
 
               <FormControl>
-                <FormLabel fontWeight="semibold" fontSize="sm" color={labelColor}>
+                <FormLabel fontWeight="medium" fontSize="xs" color={labelColor}>
                   Description & Instructions
                 </FormLabel>
                 <Textarea
                   name="description"
                   value={form.description}
                   onChange={handleChange}
-                  placeholder="Detail out objectives, resources, or grading criteria..."
-                  rows={4}
-                  borderRadius="xl"
+                  placeholder="Detail out objectives or instructions..."
+                  rows={3}
+                  borderRadius="md"
                   bg={inputBg}
                   borderColor={inputBorder}
-                  _hover={{ borderColor: focusBorder }}
-                  _focus={{ borderColor: focusBorder, boxShadow: `0 0 0 1px ${focusBorder}` }}
+                  _focus={{ borderColor: focusBorder }}
                 />
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel fontWeight="semibold" fontSize="sm" color={labelColor}>
+                <FormLabel fontWeight="medium" fontSize="xs" color={labelColor}>
                   <HStack spacing={1.5}>
-                    <Icon as={FiCalendar} color="blue.500" />
+                    <Icon as={FiCalendar} />
                     <Text>Due Date</Text>
                   </HStack>
                 </FormLabel>
@@ -300,17 +293,15 @@ export default function AssignmentModal({
                   type="date"
                   value={form.dueDate}
                   onChange={handleChange}
-                  size="lg"
-                  borderRadius="xl"
+                  borderRadius="md"
                   bg={inputBg}
                   borderColor={inputBorder}
-                  _hover={{ borderColor: focusBorder }}
-                  _focus={{ borderColor: focusBorder, boxShadow: `0 0 0 1px ${focusBorder}` }}
+                  _focus={{ borderColor: focusBorder }}
                 />
               </FormControl>
 
               <FormControl>
-                <FormLabel fontWeight="semibold" fontSize="sm" color={labelColor}>
+                <FormLabel fontWeight="medium" fontSize="xs" color={labelColor}>
                   Attachment / Resource File
                 </FormLabel>
                 <input
@@ -322,87 +313,80 @@ export default function AssignmentModal({
 
                 {form.fileUrl ? (
                   <Flex
-                    p={4}
-                    borderRadius="xl"
+                    p={3}
+                    borderRadius="md"
                     bg={uploadAreaBg}
                     borderWidth="1px"
                     borderColor={uploadAreaBorder}
                     align="center"
                     justify="space-between"
                   >
-                    <HStack spacing={3}>
-                      <Icon as={FiCheckCircle} color="green.500" w={5} h={5} />
-                      <Box>
-                        <Text fontSize="sm" fontWeight="semibold" noOfLines={1}>
-                          {fileName || "File Uploaded"}
-                        </Text>
-                        <Text fontSize="xs" color="gray.500">
-                          Resource ready for download
-                        </Text>
-                      </Box>
+                    <HStack spacing={2.5}>
+                      <Icon as={FiCheckCircle} color="gray.600" w={4} h={4} />
+                      <Text fontSize="xs" fontWeight="medium" noOfLines={1}>
+                        {fileName || "File Uploaded"}
+                      </Text>
                     </HStack>
                     <IconButton
                       aria-label="Remove file"
                       icon={<FiTrash2 />}
-                      size="sm"
-                      colorScheme="red"
+                      size="xs"
                       variant="ghost"
                       onClick={() => setForm((prev) => ({ ...prev, fileUrl: "" }))}
                     />
                   </Flex>
                 ) : (
-                  <MotionBox
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    p={6}
-                    borderWidth="2px"
+                  <Box
+                    p={4}
+                    borderWidth="1px"
                     borderStyle="dashed"
                     borderColor={uploadAreaBorder}
-                    borderRadius="xl"
+                    borderRadius="md"
                     bg={uploadAreaBg}
                     textAlign="center"
                     cursor="pointer"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <VStack spacing={2}>
-                      <Icon as={FiUploadCloud} w={8} h={8} color="blue.500" />
-                      <Text fontSize="sm" fontWeight="medium">
-                        Click to upload assignment resource or instructions
-                      </Text>
-                      <Text fontSize="xs" color="gray.500">
-                        PDF, DOCX, ZIP, PNG, or JPG (Max 10MB)
+                    <VStack spacing={1}>
+                      <Icon as={FiUploadCloud} w={5} h={5} color={subTextColor} />
+                      <Text fontSize="xs" fontWeight="medium">
+                        Click to upload resource or assignment file
                       </Text>
                     </VStack>
-                  </MotionBox>
+                  </Box>
                 )}
               </FormControl>
             </VStack>
           </ModalBody>
 
-          <ModalFooter bg={useColorModeValue("gray.50", "gray.900")} px={6} py={4} gap={3}>
+          <ModalFooter px={6} pb={6} gap={2}>
             {assignmentData && (
               <Button
                 colorScheme="red"
                 variant="ghost"
+                size="sm"
                 leftIcon={<FiTrash2 />}
                 mr="auto"
                 onClick={() => setIsDeleteOpen(true)}
                 isDisabled={isSubmitting}
-                borderRadius="xl"
+                borderRadius="md"
               >
                 Delete
               </Button>
             )}
-            <Button onClick={onClose} variant="ghost" isDisabled={isSubmitting} borderRadius="xl">
+            <Button onClick={onClose} variant="ghost" size="sm" isDisabled={isSubmitting} borderRadius="md">
               Cancel
             </Button>
             <Button
               onClick={handleSubmit}
-              colorScheme="blue"
+              colorScheme="gray"
+              bg={useColorModeValue("gray.800", "gray.100")}
+              color={useColorModeValue("white", "gray.900")}
+              _hover={{ bg: useColorModeValue("gray.700", "white") }}
+              size="sm"
               isLoading={isSubmitting}
-              borderRadius="xl"
-              px={6}
-              boxShadow="0 4px 14px 0 rgba(49, 130, 206, 0.39)"
+              borderRadius="md"
+              px={5}
             >
               {assignmentData ? "Save Changes" : "Create Assignment"}
             </Button>
@@ -417,25 +401,26 @@ export default function AssignmentModal({
         onClose={() => setIsDeleteOpen(false)}
         isCentered
       >
-        <AlertDialogOverlay backdropFilter="blur(4px)" bg="blackAlpha.600">
-          <AlertDialogContent borderRadius="2xl" bg={modalBg}>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+        <AlertDialogOverlay bg="blackAlpha.400">
+          <AlertDialogContent borderRadius="xl" bg={modalBg}>
+            <AlertDialogHeader fontSize="md" fontWeight="semibold">
               Delete Assignment
             </AlertDialogHeader>
-            <AlertDialogBody>
+            <AlertDialogBody fontSize="sm" color={subTextColor}>
               Are you sure you want to delete &quot;{assignmentData?.title}&quot;? This action cannot be undone.
             </AlertDialogBody>
-            <AlertDialogFooter gap={3}>
-              <Button ref={cancelRef} onClick={() => setIsDeleteOpen(false)} variant="ghost" borderRadius="xl">
+            <AlertDialogFooter gap={2}>
+              <Button ref={cancelRef} onClick={() => setIsDeleteOpen(false)} variant="ghost" size="sm" borderRadius="md">
                 Cancel
               </Button>
               <Button
                 colorScheme="red"
+                size="sm"
                 onClick={handleDelete}
                 isLoading={isSubmitting}
-                borderRadius="xl"
+                borderRadius="md"
               >
-                Delete Assignment
+                Delete
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>

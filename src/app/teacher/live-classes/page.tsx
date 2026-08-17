@@ -28,9 +28,6 @@ import {
   FiCalendar,
   FiPlayCircle,
 } from "react-icons/fi";
-import { motion } from "framer-motion";
-
-const MotionCard = motion(Card);
 
 type Course = {
   _id: string;
@@ -68,16 +65,11 @@ export default function LiveClassDashboard() {
   });
 
   const bgColor = useColorModeValue("gray.50", "gray.900");
-  const cardBgColor = useColorModeValue("white", "gray.850");
-  const itemBgColor = useColorModeValue("gray.50", "gray.800");
+  const cardBgColor = useColorModeValue("white", "gray.800");
+  const itemBgColor = useColorModeValue("gray.50", "gray.900");
   const headingColor = useColorModeValue("gray.800", "white");
   const lightTextColor = useColorModeValue("gray.500", "gray.400");
-  const borderColor = useColorModeValue("gray.150", "gray.750");
-
-  const heroBg = useColorModeValue(
-    "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)",
-    "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
-  );
+  const borderColor = useColorModeValue("gray.200", "gray.700");
 
   const validateForm = () => {
     let isValid = true;
@@ -161,7 +153,6 @@ export default function LiveClassDashboard() {
         setClasses((prev) => [newClass, ...prev]);
         toast({
           title: "Live Class Scheduled!",
-          description: "Your session is ready for students.",
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -190,65 +181,55 @@ export default function LiveClassDashboard() {
 
   return (
     <Box bg={bgColor} minH="100vh" p={{ base: 4, md: 8 }}>
-      <VStack spacing={8} align="stretch" maxW="7xl" mx="auto">
-        {/* Banner */}
-        <Box
-          bg={heroBg}
-          borderRadius="3xl"
-          p={{ base: 6, md: 8 }}
-          color="white"
-          boxShadow="xl"
-        >
-          <HStack spacing={3} mb={2}>
-            <Badge colorScheme="red" variant="solid" px={3} py={1} borderRadius="full">
-              LIVE SESSION HUB
-            </Badge>
-          </HStack>
-          <Heading size="xl" fontWeight="extrabold">
+      <VStack spacing={6} align="stretch" maxW="7xl" mx="auto">
+        {/* Minimal Header */}
+        <Box>
+          <Heading size="lg" fontWeight="bold" color={headingColor}>
             Live Interactive Classes
           </Heading>
-          <Text color="gray.200" fontSize="sm" mt={1} maxW="2xl">
-            Schedule live audio/video classes, stream video lectures, and interact in real-time with enrolled students.
+          <Text color={lightTextColor} fontSize="sm" mt={0.5}>
+            Schedule live video classes and manage stream channels
           </Text>
         </Box>
 
-        <Grid templateColumns={{ base: "1fr", lg: "1fr 2fr" }} gap={8}>
+        <Grid templateColumns={{ base: "1fr", lg: "1fr 2fr" }} gap={6}>
           {/* Creation Form */}
           <GridItem>
             <Card
               bg={cardBgColor}
-              borderRadius="2xl"
+              borderRadius="xl"
               borderWidth="1px"
               borderColor={borderColor}
-              boxShadow="md"
-              p={6}
+              p={5}
             >
-              <Heading size="md" color={headingColor} mb={1}>
-                Schedule New Live Class
+              <Heading size="sm" color={headingColor} mb={1}>
+                Schedule Live Class
               </Heading>
-              <Text fontSize="xs" color={lightTextColor} mb={6}>
+              <Text fontSize="xs" color={lightTextColor} mb={5}>
                 Configure date, time, and target course
               </Text>
 
               <VStack spacing={4}>
                 <FormControl isInvalid={!!formErrors.title} isRequired>
-                  <FormLabel fontSize="sm" fontWeight="semibold">Session Title</FormLabel>
+                  <FormLabel fontSize="xs" fontWeight="medium">Session Title</FormLabel>
                   <Input
-                    placeholder="e.g. Q&A & Exam Review Session"
+                    placeholder="e.g. Q&A Review Session"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    borderRadius="xl"
+                    borderRadius="md"
+                    fontSize="xs"
                   />
                   <FormErrorMessage>{formErrors.title}</FormErrorMessage>
                 </FormControl>
 
                 <FormControl isInvalid={!!formErrors.selectedCourse} isRequired>
-                  <FormLabel fontSize="sm" fontWeight="semibold">Course</FormLabel>
+                  <FormLabel fontSize="xs" fontWeight="medium">Course</FormLabel>
                   <Select
                     placeholder="Select Target Course"
                     value={selectedCourse}
                     onChange={(e) => setSelectedCourse(e.target.value)}
-                    borderRadius="xl"
+                    borderRadius="md"
+                    fontSize="xs"
                   >
                     {courses.map((c) => (
                       <option key={c._id} value={c._id}>
@@ -260,26 +241,29 @@ export default function LiveClassDashboard() {
                 </FormControl>
 
                 <FormControl isInvalid={!!formErrors.scheduledAt} isRequired>
-                  <FormLabel fontSize="sm" fontWeight="semibold">Schedule Date & Time</FormLabel>
+                  <FormLabel fontSize="xs" fontWeight="medium">Schedule Date & Time</FormLabel>
                   <Input
                     type="datetime-local"
                     value={scheduledAt}
                     onChange={(e) => setScheduledAt(e.target.value)}
-                    borderRadius="xl"
+                    borderRadius="md"
+                    fontSize="xs"
                   />
                   <FormErrorMessage>{formErrors.scheduledAt}</FormErrorMessage>
                 </FormControl>
 
                 <Button
-                  colorScheme="blue"
+                  colorScheme="gray"
+                  bg={useColorModeValue("gray.800", "gray.100")}
+                  color={useColorModeValue("white", "gray.900")}
+                  _hover={{ bg: useColorModeValue("gray.700", "white") }}
                   leftIcon={<FiPlus />}
                   w="100%"
-                  size="lg"
-                  borderRadius="xl"
+                  size="sm"
+                  borderRadius="md"
                   onClick={handleCreate}
                   isLoading={isCreating}
                   mt={2}
-                  boxShadow="0 4px 14px rgba(59, 130, 246, 0.35)"
                 >
                   Schedule Session
                 </Button>
@@ -291,37 +275,34 @@ export default function LiveClassDashboard() {
           <GridItem>
             <Card
               bg={cardBgColor}
-              borderRadius="2xl"
+              borderRadius="xl"
               borderWidth="1px"
               borderColor={borderColor}
-              boxShadow="md"
-              p={6}
+              p={5}
             >
-              <Heading size="md" color={headingColor} mb={1}>
-                Upcoming & Live Classes ({classes.length})
+              <Heading size="sm" color={headingColor} mb={1}>
+                Upcoming Live Classes ({classes.length})
               </Heading>
-              <Text fontSize="xs" color={lightTextColor} mb={6}>
-                Manage stream channels and launch video rooms
+              <Text fontSize="xs" color={lightTextColor} mb={5}>
+                Launch video stream rooms
               </Text>
 
               {isLoadingData ? (
-                <Flex justify="center" align="center" minH="250px">
-                  <Spinner size="xl" color="blue.500" thickness="3px" />
+                <Flex justify="center" align="center" minH="200px">
+                  <Spinner size="md" color="gray.500" thickness="2px" />
                 </Flex>
               ) : classes.length === 0 ? (
-                <VStack py={12} spacing={3} color={lightTextColor} textAlign="center">
-                  <FiVideo size={40} />
-                  <Text fontWeight="semibold" fontSize="md">No live classes scheduled</Text>
-                  <Text fontSize="xs">Schedule your first class using the form on the left.</Text>
+                <VStack py={10} spacing={2} color={lightTextColor} textAlign="center">
+                  <FiVideo size={32} />
+                  <Text fontWeight="medium" fontSize="sm">No live classes scheduled</Text>
                 </VStack>
               ) : (
-                <VStack spacing={4} align="stretch" maxH="550px" overflowY="auto" pr={1}>
+                <VStack spacing={3} align="stretch" maxH="500px" overflowY="auto" pr={1}>
                   {classes.map((cls) => (
-                    <MotionCard
+                    <Card
                       key={cls._id}
-                      whileHover={{ scale: 1.01 }}
-                      p={5}
-                      borderRadius="xl"
+                      p={4}
+                      borderRadius="lg"
                       borderWidth="1px"
                       borderColor={borderColor}
                       bg={itemBgColor}
@@ -329,40 +310,37 @@ export default function LiveClassDashboard() {
                       <Flex justify="space-between" align="center">
                         <Box flex={1}>
                           <HStack spacing={2} mb={1}>
-                            <Badge colorScheme="blue" px={2.5} py={0.5} borderRadius="md" fontSize="xs">
+                            <Badge variant="outline" colorScheme="gray" px={2} py={0.5} borderRadius="md" fontSize="10px">
                               {cls.course?.title || "Course Session"}
                             </Badge>
                           </HStack>
-                          <Heading size="sm" color={headingColor} mb={1}>
+                          <Heading size="xs" color={headingColor} mb={1}>
                             {cls.title}
                           </Heading>
-                          <HStack spacing={4} fontSize="xs" color={lightTextColor}>
-                            <HStack spacing={1}>
-                              <FiCalendar />
-                              <Text>
-                                {new Date(cls.scheduledAt).toLocaleString("en-US", {
-                                  month: "short",
-                                  day: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </Text>
-                            </HStack>
+                          <HStack spacing={1} fontSize="xs" color={lightTextColor}>
+                            <FiCalendar />
+                            <Text>
+                              {new Date(cls.scheduledAt).toLocaleString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </Text>
                           </HStack>
                         </Box>
 
                         <Button
                           leftIcon={<FiPlayCircle />}
-                          colorScheme="green"
-                          size="md"
-                          borderRadius="xl"
+                          colorScheme="gray"
+                          size="sm"
+                          borderRadius="md"
                           onClick={() => window.open(`/live-class/${cls.channelName}`, "_blank")}
-                          boxShadow="0 4px 12px rgba(34, 197, 94, 0.3)"
                         >
                           Start Stream
                         </Button>
                       </Flex>
-                    </MotionCard>
+                    </Card>
                   ))}
                 </VStack>
               )}
