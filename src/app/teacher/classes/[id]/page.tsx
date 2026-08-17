@@ -48,9 +48,6 @@ import {
   FiCalendar,
 } from "react-icons/fi";
 import CourseMessages from "@/components/CourseMessages";
-import { motion } from "framer-motion";
-
-const MotionBox = motion(Box);
 
 type Assignment = {
   _id: string;
@@ -105,18 +102,16 @@ export default function CourseDetailPage() {
   const cancelRef = useRef<HTMLButtonElement>(null);
   const [refresh, setRefresh] = useState(false);
 
-  // Modern Color Tokens
+  // Minimal Color Tokens
   const pageBg = useColorModeValue("gray.50", "gray.900");
-  const cardBg = useColorModeValue("white", "gray.850");
+  const cardBg = useColorModeValue("white", "gray.800");
   const headingColor = useColorModeValue("gray.800", "white");
   const textColor = useColorModeValue("gray.600", "gray.300");
   const metaColor = useColorModeValue("gray.500", "gray.400");
-  const borderColor = useColorModeValue("gray.150", "gray.750");
-
-  const heroGradient = useColorModeValue(
-    "linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%)",
-    "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
-  );
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const btnBg = useColorModeValue("gray.900", "white");
+  const btnColor = useColorModeValue("white", "gray.900");
+  const btnHoverBg = useColorModeValue("gray.700", "white");
 
   useEffect(() => {
     if (id) {
@@ -224,9 +219,9 @@ export default function CourseDetailPage() {
   if (!course) {
     return (
       <Flex justify="center" align="center" minH="80vh" bg={pageBg}>
-        <VStack spacing={4}>
-          <Spinner size="xl" thickness="4px" color="blue.500" />
-          <Text color={metaColor}>Loading class workspace...</Text>
+        <VStack spacing={3}>
+          <Spinner size="md" thickness="2px" color="gray.500" />
+          <Text fontSize="xs" color={metaColor}>Loading class workspace...</Text>
         </VStack>
       </Flex>
     );
@@ -238,76 +233,71 @@ export default function CourseDetailPage() {
       <Button
         leftIcon={<FiArrowLeft />}
         variant="ghost"
+        size="sm"
         mb={4}
         onClick={() => router.push("/teacher/classes")}
-        borderRadius="xl"
+        borderRadius="md"
       >
         Back to Classes
       </Button>
 
-      {/* Hero Header Banner */}
-      <MotionBox
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        bg={heroGradient}
-        borderRadius="3xl"
-        p={{ base: 6, md: 8 }}
-        color="white"
-        boxShadow="xl"
-        mb={8}
+      {/* Minimal Header Banner */}
+      <Card
+        bg={cardBg}
+        borderRadius="xl"
+        p={{ base: 5, md: 6 }}
+        borderWidth="1px"
+        borderColor={borderColor}
+        boxShadow="none"
+        mb={6}
       >
         <Flex
           direction={{ base: "column", md: "row" }}
           justify="space-between"
           align={{ base: "flex-start", md: "center" }}
-          gap={6}
+          gap={4}
         >
-          <VStack align="flex-start" spacing={3} flex={1}>
+          <VStack align="flex-start" spacing={2} flex={1}>
             <HStack spacing={2}>
-              <Badge bg="whiteAlpha.300" color="white" px={3} py={1} borderRadius="full" fontSize="xs">
+              <Badge variant="outline" colorScheme="gray" px={2} py={0.5} borderRadius="md" fontSize="10px">
                 {course.subject || "General"}
               </Badge>
-              <Badge colorScheme="blue" px={3} py={1} borderRadius="full" fontSize="xs">
+              <Badge variant="subtle" colorScheme="gray" px={2} py={0.5} borderRadius="md" fontSize="10px">
                 {course.level || "Beginner"}
               </Badge>
             </HStack>
 
-            <Heading size="xl" fontWeight="extrabold">
+            <Heading size="lg" fontWeight="bold" color={headingColor}>
               {course.title}
             </Heading>
 
-            <Text color="gray.200" fontSize="sm" maxW="3xl">
+            <Text color={textColor} fontSize="xs" maxW="3xl">
               {course.description || "No description provided."}
             </Text>
           </VStack>
 
           {/* Right Action Box: Join Code & Edit */}
-          <HStack spacing={4} align="stretch" w={{ base: "100%", md: "auto" }}>
+          <HStack spacing={3} align="stretch">
             <Box
-              bg="whiteAlpha.200"
-              backdropFilter="blur(8px)"
-              p={4}
-              borderRadius="2xl"
+              bg={pageBg}
+              p={3}
+              borderRadius="lg"
               borderWidth="1px"
-              borderColor="whiteAlpha.300"
+              borderColor={borderColor}
               textAlign="center"
-              flex={1}
             >
-              <Text fontSize="xs" color="gray.300" textTransform="uppercase" fontWeight="bold">
-                Student Join Code
+              <Text fontSize="10px" color={metaColor} textTransform="uppercase" fontWeight="medium">
+                Class Join Code
               </Text>
-              <HStack justify="center" spacing={2} mt={1}>
-                <Text fontSize="2xl" fontWeight="extrabold" letterSpacing="1.5px">
+              <HStack justify="center" spacing={2} mt={0.5}>
+                <Text fontSize="md" fontWeight="bold" letterSpacing="1px">
                   {course.joinCode}
                 </Text>
                 <IconButton
                   aria-label="Copy Join Code"
-                  icon={copied ? <FiCheck color="#68d391" /> : <FiCopy />}
-                  size="sm"
+                  icon={copied ? <FiCheck /> : <FiCopy />}
+                  size="xs"
                   variant="ghost"
-                  color="white"
-                  _hover={{ bg: "whiteAlpha.300" }}
                   onClick={copyJoinCode}
                 />
               </HStack>
@@ -316,32 +306,31 @@ export default function CourseDetailPage() {
             <IconButton
               aria-label="Edit Course"
               icon={<FiEdit />}
-              size="lg"
-              colorScheme="whiteAlpha"
-              variant="solid"
-              borderRadius="2xl"
+              size="md"
+              variant="outline"
+              borderRadius="lg"
               onClick={() => router.push(`/teacher/classes/${id}/edit`)}
             />
           </HStack>
         </Flex>
-      </MotionBox>
+      </Card>
 
       {/* Main Tabbed Interface */}
-      <Tabs variant="soft-rounded" colorScheme="blue">
-        <TabList mb={6} overflowX="auto" pb={2} gap={2}>
-          <Tab borderRadius="xl" fontWeight="bold" fontSize="sm">
+      <Tabs variant="line" colorScheme="gray">
+        <TabList mb={6} overflowX="auto" pb={1} gap={2} borderColor={borderColor}>
+          <Tab fontWeight="medium" fontSize="xs">
             <HStack spacing={2}>
               <FiMessageCircle />
               <Text>Announcements & Feed</Text>
             </HStack>
           </Tab>
-          <Tab borderRadius="xl" fontWeight="bold" fontSize="sm">
+          <Tab fontWeight="medium" fontSize="xs">
             <HStack spacing={2}>
               <FiFileText />
               <Text>Assignments ({course.assignments?.length || 0})</Text>
             </HStack>
           </Tab>
-          <Tab borderRadius="xl" fontWeight="bold" fontSize="sm">
+          <Tab fontWeight="medium" fontSize="xs">
             <HStack spacing={2}>
               <FiUsers />
               <Text>Roster ({course.students?.length || 0})</Text>
@@ -359,19 +348,19 @@ export default function CourseDetailPage() {
 
               {/* Sidebar Quick Info */}
               <GridItem>
-                <VStack spacing={6} align="stretch">
-                  <Card bg={cardBg} borderRadius="2xl" borderWidth="1px" borderColor={borderColor} p={5}>
-                    <Heading size="xs" textTransform="uppercase" color="gray.500" mb={3}>
-                      Upcoming Due Dates
+                <VStack spacing={4} align="stretch">
+                  <Card bg={cardBg} borderRadius="xl" borderWidth="1px" borderColor={borderColor} p={4}>
+                    <Heading size="xs" textTransform="uppercase" color={metaColor} mb={3}>
+                      Upcoming Deadlines
                     </Heading>
                     {course.assignments && course.assignments.length > 0 ? (
-                      <VStack align="stretch" spacing={3}>
+                      <VStack align="stretch" spacing={2.5}>
                         {course.assignments.slice(0, 3).map((asg) => (
-                          <Box key={asg._id} p={3} bg={pageBg} borderRadius="xl">
-                            <Text fontWeight="semibold" fontSize="sm" noOfLines={1}>
+                          <Box key={asg._id} p={2.5} bg={pageBg} borderRadius="md" borderWidth="1px" borderColor={borderColor}>
+                            <Text fontWeight="medium" fontSize="xs" noOfLines={1}>
                               {asg.title}
                             </Text>
-                            <HStack spacing={1.5} fontSize="xs" color="gray.500" mt={1}>
+                            <HStack spacing={1} fontSize="10px" color={metaColor} mt={0.5}>
                               <FiCalendar />
                               <Text>
                                 {new Date(asg.dueDate).toLocaleDateString("en-US", {
@@ -384,23 +373,23 @@ export default function CourseDetailPage() {
                         ))}
                       </VStack>
                     ) : (
-                      <Text fontSize="xs" color="gray.500">
+                      <Text fontSize="xs" color={metaColor}>
                         No upcoming assignment deadlines.
                       </Text>
                     )}
                   </Card>
 
-                  <Card bg={cardBg} borderRadius="2xl" borderWidth="1px" borderColor={borderColor} p={5}>
-                    <Heading size="xs" textTransform="uppercase" color="gray.500" mb={3}>
-                      Class Roster Summary
+                  <Card bg={cardBg} borderRadius="xl" borderWidth="1px" borderColor={borderColor} p={4}>
+                    <Heading size="xs" textTransform="uppercase" color={metaColor} mb={3}>
+                      Roster Summary
                     </Heading>
                     <HStack spacing={3}>
-                      <AvatarGroup size="sm" max={4}>
+                      <AvatarGroup size="xs" max={4}>
                         {course.students?.map((st) => (
                           <Avatar key={st._id} name={st.name} src={st.avatar} />
                         ))}
                       </AvatarGroup>
-                      <Text fontSize="xs" fontWeight="semibold" color={textColor}>
+                      <Text fontSize="xs" color={textColor}>
                         {course.students?.length || 0} Total Enrolled
                       </Text>
                     </HStack>
@@ -412,20 +401,24 @@ export default function CourseDetailPage() {
 
           {/* TAB 2: Assignments */}
           <TabPanel p={0}>
-            <Card bg={cardBg} borderRadius="2xl" borderWidth="1px" borderColor={borderColor} p={{ base: 4, md: 6 }}>
-              <Flex justify="space-between" align="center" mb={6}>
+            <Card bg={cardBg} borderRadius="xl" borderWidth="1px" borderColor={borderColor} p={{ base: 4, md: 5 }}>
+              <Flex justify="space-between" align="center" mb={5}>
                 <Box>
-                  <Heading size="md" color={headingColor}>
+                  <Heading size="sm" color={headingColor}>
                     Class Assignments
                   </Heading>
                   <Text fontSize="xs" color={metaColor}>
-                    Create, edit, and download student submissions
+                    Manage and download student submissions
                   </Text>
                 </Box>
                 <Button
                   leftIcon={<FiPlus />}
-                  colorScheme="blue"
-                  borderRadius="xl"
+                  size="sm"
+                  colorScheme="gray"
+                  bg={btnBg}
+                  color={btnColor}
+                  _hover={{ bg: btnHoverBg }}
+                  borderRadius="md"
                   onClick={handleCreateAssignment}
                 >
                   New Assignment
@@ -433,25 +426,24 @@ export default function CourseDetailPage() {
               </Flex>
 
               {course.assignments && course.assignments.length > 0 ? (
-                <VStack spacing={4} align="stretch">
+                <VStack spacing={3} align="stretch">
                   {course.assignments.map((assignment) => (
                     <Card
                       key={assignment._id}
-                      p={5}
-                      borderRadius="xl"
+                      p={4}
+                      borderRadius="lg"
                       borderWidth="1px"
                       borderColor={borderColor}
                       bg={pageBg}
-                      boxShadow="sm"
                     >
                       <Flex justify="space-between" align="flex-start">
                         <Box flex={1}>
                           <HStack spacing={2} mb={1}>
-                            <Heading size="sm" color={headingColor}>
+                            <Heading size="xs" color={headingColor}>
                               {assignment.title}
                             </Heading>
                             {assignment.fileUrl && (
-                              <Badge colorScheme="green" fontSize="9px">
+                              <Badge variant="subtle" colorScheme="gray" fontSize="9px">
                                 Resource Included
                               </Badge>
                             )}
@@ -459,28 +451,25 @@ export default function CourseDetailPage() {
                           <Text fontSize="xs" color={textColor} noOfLines={2} mb={2}>
                             {assignment.description || "No specific instructions provided."}
                           </Text>
-                          <HStack spacing={4} fontSize="xs" color={metaColor}>
-                            <HStack spacing={1}>
-                              <FiCalendar />
-                              <Text>
-                                Due:{" "}
-                                {new Date(assignment.dueDate).toLocaleDateString("en-US", {
-                                  weekday: "short",
-                                  month: "short",
-                                  day: "numeric",
-                                })}
-                              </Text>
-                            </HStack>
+                          <HStack spacing={1} fontSize="xs" color={metaColor}>
+                            <FiCalendar />
+                            <Text>
+                              Due:{" "}
+                              {new Date(assignment.dueDate).toLocaleDateString("en-US", {
+                                weekday: "short",
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </Text>
                           </HStack>
                         </Box>
 
-                        <HStack spacing={2}>
+                        <HStack spacing={1.5}>
                           <Button
-                            size="sm"
+                            size="xs"
                             leftIcon={<FiDownload />}
                             variant="outline"
-                            colorScheme="blue"
-                            borderRadius="lg"
+                            borderRadius="md"
                             onClick={() => handleDownloadAssignment(assignment._id)}
                           >
                             Submissions
@@ -488,14 +477,14 @@ export default function CourseDetailPage() {
                           <IconButton
                             aria-label="Edit"
                             icon={<FiEdit />}
-                            size="sm"
+                            size="xs"
                             variant="ghost"
                             onClick={() => handleEditAssignment(assignment)}
                           />
                           <IconButton
                             aria-label="Delete"
                             icon={<FiTrash2 />}
-                            size="sm"
+                            size="xs"
                             colorScheme="red"
                             variant="ghost"
                             onClick={() => {
@@ -509,10 +498,10 @@ export default function CourseDetailPage() {
                   ))}
                 </VStack>
               ) : (
-                <Box textAlign="center" py={12}>
-                  <VStack spacing={3}>
-                    <FiFileText size={36} color="#a0aec0" />
-                    <Text fontSize="md" fontWeight="semibold" color={headingColor}>
+                <Box textAlign="center" py={10}>
+                  <VStack spacing={2}>
+                    <FiFileText size={28} color="#a0aec0" />
+                    <Text fontSize="sm" fontWeight="medium" color={headingColor}>
                       No assignments published yet
                     </Text>
                     <Text fontSize="xs" color={metaColor}>
@@ -526,25 +515,25 @@ export default function CourseDetailPage() {
 
           {/* TAB 3: Students Roster */}
           <TabPanel p={0}>
-            <Card bg={cardBg} borderRadius="2xl" borderWidth="1px" borderColor={borderColor} p={{ base: 4, md: 6 }}>
-              <Heading size="md" color={headingColor} mb={1}>
+            <Card bg={cardBg} borderRadius="xl" borderWidth="1px" borderColor={borderColor} p={{ base: 4, md: 5 }}>
+              <Heading size="sm" color={headingColor} mb={0.5}>
                 Enrolled Students Roster
               </Heading>
-              <Text fontSize="xs" color={metaColor} mb={6}>
+              <Text fontSize="xs" color={metaColor} mb={5}>
                 Students currently registered in this class
               </Text>
 
               {course.students && course.students.length > 0 ? (
-                <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" }} gap={4}>
+                <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" }} gap={3}>
                   {course.students.map((student) => (
-                    <Card key={student._id} p={4} borderRadius="xl" borderWidth="1px" borderColor={borderColor} bg={pageBg}>
+                    <Card key={student._id} p={3.5} borderRadius="lg" borderWidth="1px" borderColor={borderColor} bg={pageBg}>
                       <HStack spacing={3}>
-                        <Avatar name={student.name} src={student.avatar} size="md" />
+                        <Avatar name={student.name} src={student.avatar} size="sm" />
                         <Box overflow="hidden">
-                          <Text fontWeight="bold" fontSize="sm" noOfLines={1} color={headingColor}>
+                          <Text fontWeight="semibold" fontSize="xs" noOfLines={1} color={headingColor}>
                             {student.name}
                           </Text>
-                          <Text fontSize="xs" color={metaColor} noOfLines={1}>
+                          <Text fontSize="10px" color={metaColor} noOfLines={1}>
                             {student.email}
                           </Text>
                         </Box>
@@ -553,14 +542,14 @@ export default function CourseDetailPage() {
                   ))}
                 </Grid>
               ) : (
-                <Box textAlign="center" py={12}>
-                  <VStack spacing={3}>
-                    <FiUsers size={36} color="#a0aec0" />
-                    <Text fontSize="md" fontWeight="semibold" color={headingColor}>
+                <Box textAlign="center" py={10}>
+                  <VStack spacing={2}>
+                    <FiUsers size={28} color="#a0aec0" />
+                    <Text fontSize="sm" fontWeight="medium" color={headingColor}>
                       No students enrolled yet
                     </Text>
                     <Text fontSize="xs" color={metaColor}>
-                      Share join code <Badge colorScheme="blue">{course.joinCode}</Badge> with students to enroll them.
+                      Share join code <Badge variant="outline">{course.joinCode}</Badge> with students to enroll them.
                     </Text>
                   </VStack>
                 </Box>
@@ -586,19 +575,19 @@ export default function CourseDetailPage() {
         onClose={onDeleteAlertClose}
         isCentered
       >
-        <AlertDialogOverlay backdropFilter="blur(4px)" bg="blackAlpha.600">
-          <AlertDialogContent borderRadius="2xl" bg={cardBg}>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+        <AlertDialogOverlay bg="blackAlpha.400">
+          <AlertDialogContent borderRadius="xl" bg={cardBg}>
+            <AlertDialogHeader fontSize="md" fontWeight="semibold">
               Delete Assignment
             </AlertDialogHeader>
-            <AlertDialogBody>
+            <AlertDialogBody fontSize="xs" color={metaColor}>
               Are you sure you want to delete &quot;{selectedAssignment?.title}&quot;? All student submissions for this assignment will also be removed.
             </AlertDialogBody>
-            <AlertDialogFooter gap={3}>
-              <Button ref={cancelRef} onClick={onDeleteAlertClose} variant="ghost" borderRadius="xl">
+            <AlertDialogFooter gap={2}>
+              <Button ref={cancelRef} onClick={onDeleteAlertClose} variant="ghost" size="sm" borderRadius="md">
                 Cancel
               </Button>
-              <Button colorScheme="red" onClick={handleDeleteAssignment} borderRadius="xl">
+              <Button colorScheme="red" size="sm" onClick={handleDeleteAssignment} borderRadius="md">
                 Delete Assignment
               </Button>
             </AlertDialogFooter>

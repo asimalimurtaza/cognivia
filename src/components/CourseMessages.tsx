@@ -17,9 +17,6 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState, useRef } from "react";
 import { FiMessageCircle, FiSend, FiClock } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
-
-const MotionBox = motion(Box);
 
 interface Message {
   _id: string;
@@ -36,20 +33,17 @@ export default function CourseMessages({ courseId }: { courseId: string }) {
   const toast = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const containerBg = useColorModeValue("white", "gray.850");
-  const containerBorder = useColorModeValue("gray.100", "gray.750");
-  const containerShadow = useColorModeValue("0 10px 30px -5px rgba(0, 0, 0, 0.05)", "0 10px 30px -5px rgba(0, 0, 0, 0.4)");
-  const messageInputBg = useColorModeValue("gray.50", "gray.800");
+  const containerBg = useColorModeValue("white", "gray.800");
+  const containerBorder = useColorModeValue("gray.200", "gray.700");
+  const messageInputBg = useColorModeValue("white", "gray.900");
   const messageInputColor = useColorModeValue("gray.800", "gray.100");
   const messageInputBorder = useColorModeValue("gray.200", "gray.700");
-  const messageInputFocusBorder = useColorModeValue("blue.500", "blue.400");
   
-  const teacherBubbleBg = useColorModeValue("linear-gradient(135deg, #ebf8ff 0%, #ebf8ff 100%)", "linear-gradient(135deg, #2b6cb0 0%, #2c5282 100%)");
-  const bubbleBorder = useColorModeValue("blue.100", "gray.700");
+  const bubbleBg = useColorModeValue("gray.50", "gray.900");
+  const bubbleBorder = useColorModeValue("gray.200", "gray.700");
   
   const textColor = useColorModeValue("gray.800", "gray.100");
   const metaColor = useColorModeValue("gray.500", "gray.400");
-  const emptyIconColor = useColorModeValue("blue.400", "blue.300");
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -141,151 +135,121 @@ export default function CourseMessages({ courseId }: { courseId: string }) {
     <Box
       p={{ base: 4, md: 6 }}
       borderWidth="1px"
-      borderRadius="2xl"
+      borderRadius="xl"
       bg={containerBg}
       borderColor={containerBorder}
-      boxShadow={containerShadow}
       minH="450px"
       maxH="650px"
       display="flex"
       flexDirection="column"
     >
-      <HStack justify="space-between" pb={4} mb={4} borderBottomWidth="1px" borderColor={containerBorder}>
-        <HStack spacing={3}>
-          <Box p={2} bg="blue.500" color="white" borderRadius="xl">
-            <Icon as={FiMessageCircle} w={5} h={5} />
-          </Box>
-          <Box>
-            <Text fontSize="lg" fontWeight="bold" color={textColor}>
-              Class Announcements & Stream
-            </Text>
-
-            <Text fontSize="xs" color={metaColor}>
-              Broadcast updates to all enrolled students
-            </Text>
-          </Box>
-        </HStack>
-        <Badge colorScheme="blue" borderRadius="full" px={3} py={1} fontSize="xs" fontWeight="bold">
+      <HStack justify="space-between" pb={3} mb={4} borderBottomWidth="1px" borderColor={containerBorder}>
+        <Box>
+          <Text fontSize="md" fontWeight="semibold" color={textColor}>
+            Class Stream & Announcements
+          </Text>
+          <Text fontSize="xs" color={metaColor}>
+            Broadcast updates to all enrolled students
+          </Text>
+        </Box>
+        <Badge variant="outline" colorScheme="gray" borderRadius="md" px={2} py={0.5} fontSize="xs">
           {messages.length} Posts
         </Badge>
       </HStack>
 
-      <VStack spacing={4} align="stretch" flexGrow={1} overflowY="auto" pr={1} pb={2}>
+      <VStack spacing={3} align="stretch" flexGrow={1} overflowY="auto" pr={1} pb={2}>
         {isLoadingMessages ? (
           <Flex justify="center" align="center" minH="250px" flexGrow={1}>
-            <VStack spacing={3}>
-              <Spinner size="xl" color="blue.500" thickness="3px" />
-              <Text fontSize="sm" color={metaColor}>
-                Loading announcements...
-              </Text>
-            </VStack>
+            <Spinner size="md" color="gray.500" thickness="2px" />
           </Flex>
         ) : messages.length === 0 ? (
           <VStack
-            spacing={3}
+            spacing={2}
             py={12}
             color={metaColor}
             textAlign="center"
             flexGrow={1}
             justify="center"
           >
-            <Icon as={FiMessageCircle} w={12} h={12} color={emptyIconColor} />
-            <Text fontSize="lg" fontWeight="semibold" color={textColor}>
+            <Icon as={FiMessageCircle} w={8} h={8} color={metaColor} />
+            <Text fontSize="sm" fontWeight="medium" color={textColor}>
               No announcements posted yet
-            </Text>
-            <Text fontSize="sm">
-              Use the box below to publish your first announcement to students.
             </Text>
           </VStack>
         ) : (
-          <AnimatePresence initial={false}>
-            {messages.map((msg) => (
-              <MotionBox
-                key={msg._id}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25 }}
-                p={4}
-                borderRadius="xl"
-                borderWidth="1px"
-                borderColor={bubbleBorder}
-                bg={teacherBubbleBg}
-                boxShadow="sm"
-              >
-                <HStack justify="space-between" mb={2}>
-                  <HStack spacing={2.5}>
-                    <Avatar
-                      size="sm"
-                      name={msg.postedBy?.name || "Teacher"}
-                      src={msg.postedBy?.avatar}
-                      bg="blue.600"
-                      color="white"
-                    />
-                    <Box>
-                      <HStack spacing={2}>
-                        <Text fontWeight="bold" fontSize="sm" color={textColor}>
-                          {msg.postedBy?.name || "Teacher"}
-                        </Text>
-                        <Badge colorScheme="teal" fontSize="9px" px={2} borderRadius="full">
-                          Teacher
-                        </Badge>
-                      </HStack>
-                    </Box>
-                  </HStack>
-
-                  <HStack spacing={1} color={metaColor} fontSize="xs">
-                    <Icon as={FiClock} w={3.5} h={3.5} />
-                    <Text>
-                      {new Date(msg.createdAt).toLocaleString("en-US", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </Text>
-                  </HStack>
+          messages.map((msg) => (
+            <Box
+              key={msg._id}
+              p={4}
+              borderRadius="lg"
+              borderWidth="1px"
+              borderColor={bubbleBorder}
+              bg={bubbleBg}
+            >
+              <HStack justify="space-between" mb={2}>
+                <HStack spacing={2}>
+                  <Avatar
+                    size="xs"
+                    name={msg.postedBy?.name || "Teacher"}
+                    src={msg.postedBy?.avatar}
+                  />
+                  <Text fontWeight="semibold" fontSize="xs" color={textColor}>
+                    {msg.postedBy?.name || "Teacher"}
+                  </Text>
+                  <Badge variant="subtle" colorScheme="gray" fontSize="9px" px={1.5}>
+                    Teacher
+                  </Badge>
                 </HStack>
 
-                <Text fontSize="sm" color={textColor} lineHeight="relaxed" whiteSpace="pre-wrap" pl={1}>
-                  {msg.content}
-                </Text>
-              </MotionBox>
-            ))}
-          </AnimatePresence>
+                <HStack spacing={1} color={metaColor} fontSize="10px">
+                  <Icon as={FiClock} />
+                  <Text>
+                    {new Date(msg.createdAt).toLocaleString("en-US", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      day: "numeric",
+                      month: "short",
+                    })}
+                  </Text>
+                </HStack>
+              </HStack>
+
+              <Text fontSize="xs" color={textColor} lineHeight="relaxed" whiteSpace="pre-wrap">
+                {msg.content}
+              </Text>
+            </Box>
+          ))
         )}
         <div ref={messagesEndRef} />
       </VStack>
 
       {/* Input Box */}
-      <Box pt={4} borderTopWidth="1px" borderColor={containerBorder}>
-        <VStack spacing={3}>
+      <Box pt={3} borderTopWidth="1px" borderColor={containerBorder}>
+        <VStack spacing={2.5}>
           <Textarea
-            placeholder="Share an announcement or update with the class..."
+            placeholder="Write an announcement..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            rows={3}
+            rows={2}
             bg={messageInputBg}
             color={messageInputColor}
             borderColor={messageInputBorder}
-            borderRadius="xl"
-            _hover={{ borderColor: messageInputFocusBorder }}
-            _focus={{
-              borderColor: messageInputFocusBorder,
-              boxShadow: `0 0 0 1px ${messageInputFocusBorder}`,
-            }}
-            fontSize="sm"
+            borderRadius="md"
+            fontSize="xs"
           />
           <Flex justify="flex-end" w="100%">
             <Button
-              colorScheme="blue"
+              colorScheme="gray"
+              bg={useColorModeValue("gray.800", "gray.100")}
+              color={useColorModeValue("white", "gray.900")}
+              _hover={{ bg: useColorModeValue("gray.700", "white") }}
               onClick={handlePostMessage}
               isDisabled={!newMessage.trim() || isPostingMessage}
               isLoading={isPostingMessage}
               leftIcon={<FiSend />}
-              size="md"
-              borderRadius="xl"
-              px={6}
-              boxShadow="0 4px 12px rgba(49, 130, 206, 0.3)"
+              size="sm"
+              borderRadius="md"
+              px={4}
             >
               Post Announcement
             </Button>

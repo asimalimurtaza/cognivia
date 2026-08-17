@@ -57,9 +57,6 @@ import {
   FiCheck,
   FiLayers,
 } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
-
-const MotionCard = motion(Card);
 
 type User = {
   _id: string;
@@ -99,15 +96,6 @@ type Course = {
   createdAt?: string;
 };
 
-const SUBJECT_COLORS: Record<string, string> = {
-  Mathematics: "linear-gradient(135deg, #3182ce 0%, #63b3ed 100%)",
-  Science: "linear-gradient(135deg, #38a169 0%, #68d391 100%)",
-  English: "linear-gradient(135deg, #dd6b20 0%, #f6ad55 100%)",
-  History: "linear-gradient(135deg, #805ad5 0%, #b794f4 100%)",
-  ComputerScience: "linear-gradient(135deg, #319795 0%, #4fd1c5 100%)",
-  Default: "linear-gradient(135deg, #4a5568 0%, #a0aec0 100%)",
-};
-
 export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -133,20 +121,19 @@ export default function CoursesPage() {
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  // Modern Color Mode Tokens
+  // Minimal Color Mode Tokens
   const pageBg = useColorModeValue("gray.50", "gray.900");
-  const cardBg = useColorModeValue("white", "gray.850");
+  const cardBg = useColorModeValue("white", "gray.800");
   const headingColor = useColorModeValue("gray.800", "white");
   const textColor = useColorModeValue("gray.600", "gray.300");
   const lightTextColor = useColorModeValue("gray.500", "gray.400");
-  const borderColor = useColorModeValue("gray.150", "gray.750");
-  const bannerBg = useColorModeValue(
-    "linear-gradient(135deg, #1a202c 0%, #2d3748 100%)",
-    "linear-gradient(135deg, #0d1117 0%, #161b22 100%)",
-  );
-  const codeBoxBg = useColorModeValue("blue.50", "blue.900");
-  const codeBoxColor = useColorModeValue("blue.700", "blue.200");
-  const modalBg = useColorModeValue("white", "gray.850");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const hoverBorderColor = useColorModeValue("gray.400", "gray.500");
+  const codeBoxBg = useColorModeValue("gray.50", "gray.900");
+  const modalBg = useColorModeValue("white", "gray.800");
+  const btnBg = useColorModeValue("gray.900", "white");
+  const btnColor = useColorModeValue("white", "gray.900");
+  const btnHoverBg = useColorModeValue("gray.800", "gray.100");
 
   useEffect(() => {
     fetchCourses();
@@ -163,7 +150,6 @@ export default function CoursesPage() {
       console.error("Error fetching courses:", error);
       toast({
         title: "Error loading classes",
-        description: "Failed to fetch your classes.",
         status: "error",
         duration: 4000,
         isClosable: true,
@@ -203,7 +189,6 @@ export default function CoursesPage() {
         const newCourse = await res.json();
         toast({
           title: "Class created!",
-          description: "Your new class has been added.",
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -294,156 +279,120 @@ export default function CoursesPage() {
 
   return (
     <Box bg={pageBg} minH="100vh" p={{ base: 4, md: 8 }}>
-      <VStack spacing={8} align="stretch" maxW="7xl" mx="auto">
-        {/* Banner Section */}
-        <Box
-          bg={bannerBg}
-          borderRadius="3xl"
-          p={{ base: 6, md: 10 }}
-          color="white"
-          boxShadow="2xl"
-          position="relative"
-          overflow="hidden"
+      <VStack spacing={6} align="stretch" maxW="7xl" mx="auto">
+        {/* Minimal Header Section */}
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          justify="space-between"
+          align={{ base: "flex-start", md: "center" }}
+          gap={4}
+          pb={2}
         >
-          <Flex
-            direction={{ base: "column", md: "row" }}
-            justify="space-between"
-            align={{ base: "flex-start", md: "center" }}
-            gap={6}
-            position="relative"
-            zIndex={1}
-          >
-            <VStack align="flex-start" spacing={2} maxW="2xl">
-              <HStack spacing={2}>
-                <Badge
-                  colorScheme="blue"
-                  px={3}
-                  py={1}
-                  borderRadius="full"
-                  fontSize="xs"
-                  fontWeight="bold"
-                >
-                  Teacher Portal
-                </Badge>
-              </HStack>
-              <Heading size="xl" fontWeight="extrabold">
-                Classes & Course Management
-              </Heading>
-              <Text color="gray.300" fontSize={{ base: "sm", md: "md" }}>
-                Create, manage, and distribute course materials, assignments,
-                and announcements to your students.
-              </Text>
-            </VStack>
+          <Box>
+            <Heading size="lg" fontWeight="bold" color={headingColor}>
+              Classes & Courses
+            </Heading>
+            <Text color={lightTextColor} fontSize="sm" mt={0.5}>
+              Manage your course roster, assignments, and class codes
+            </Text>
+          </Box>
 
-            <Button
-              leftIcon={<FiPlus />}
-              colorScheme="blue"
-              size="lg"
-              borderRadius="xl"
-              px={8}
-              onClick={onOpen}
-              boxShadow="0 4px 20px rgba(66, 153, 225, 0.4)"
-              _hover={{
-                transform: "translateY(-2px)",
-                boxShadow: "0 6px 24px rgba(66, 153, 225, 0.5)",
-              }}
-            >
-              Create New Class
-            </Button>
-          </Flex>
-
-          {/* Quick Metrics Bar */}
-          <SimpleGrid
-            columns={{ base: 1, sm: 3 }}
-            spacing={4}
-            mt={8}
-            pt={6}
-            borderTop="1px solid rgba(255,255,255,0.1)"
+          <Button
+            leftIcon={<FiPlus />}
+            colorScheme="gray"
+            bg={btnBg}
+            color={btnColor}
+            _hover={{ bg: btnHoverBg }}
+            size="md"
+            borderRadius="md"
+            onClick={onOpen}
           >
-            <HStack spacing={4}>
-              <Flex
-                w={12}
-                h={12}
-                bg="whiteAlpha.200"
-                borderRadius="xl"
-                align="center"
-                justify="center"
-              >
-                <FiBookOpen size={22} color="#63b3ed" />
-              </Flex>
+            Create Class
+          </Button>
+        </Flex>
+
+        {/* Minimal Metrics Bar */}
+        <SimpleGrid columns={{ base: 1, sm: 3 }} spacing={4}>
+          <Card
+            bg={cardBg}
+            borderRadius="xl"
+            borderWidth="1px"
+            borderColor={borderColor}
+            p={4}
+          >
+            <HStack spacing={3}>
+              <FiBookOpen size={18} color="#718096" />
               <Box>
-                <Text fontSize="2xl" fontWeight="extrabold">
+                <Text fontSize="xl" fontWeight="bold" color={headingColor}>
                   {courses.length}
                 </Text>
-                <Text fontSize="xs" color="gray.400">
+                <Text fontSize="xs" color={lightTextColor}>
                   Total Classes
                 </Text>
               </Box>
             </HStack>
+          </Card>
 
-            <HStack spacing={4}>
-              <Flex
-                w={12}
-                h={12}
-                bg="whiteAlpha.200"
-                borderRadius="xl"
-                align="center"
-                justify="center"
-              >
-                <FiUsers size={22} color="#68d391" />
-              </Flex>
+          <Card
+            bg={cardBg}
+            borderRadius="xl"
+            borderWidth="1px"
+            borderColor={borderColor}
+            p={4}
+          >
+            <HStack spacing={3}>
+              <FiUsers size={18} color="#718096" />
               <Box>
-                <Text fontSize="2xl" fontWeight="extrabold">
+                <Text fontSize="xl" fontWeight="bold" color={headingColor}>
                   {totalStudents}
                 </Text>
-                <Text fontSize="xs" color="gray.400">
+                <Text fontSize="xs" color={lightTextColor}>
                   Enrolled Students
                 </Text>
               </Box>
             </HStack>
+          </Card>
 
-            <HStack spacing={4}>
-              <Flex
-                w={12}
-                h={12}
-                bg="whiteAlpha.200"
-                borderRadius="xl"
-                align="center"
-                justify="center"
-              >
-                <FiLayers size={22} color="#b794f4" />
-              </Flex>
+          <Card
+            bg={cardBg}
+            borderRadius="xl"
+            borderWidth="1px"
+            borderColor={borderColor}
+            p={4}
+          >
+            <HStack spacing={3}>
+              <FiLayers size={18} color="#718096" />
               <Box>
-                <Text fontSize="2xl" fontWeight="extrabold">
+                <Text fontSize="xl" fontWeight="bold" color={headingColor}>
                   {totalAssignments}
                 </Text>
-                <Text fontSize="xs" color="gray.400">
+                <Text fontSize="xs" color={lightTextColor}>
                   Published Assignments
                 </Text>
               </Box>
             </HStack>
-          </SimpleGrid>
-        </Box>
+          </Card>
+        </SimpleGrid>
 
         {/* Filter & Search Toolbar */}
         <Flex
           direction={{ base: "column", sm: "row" }}
           justify="space-between"
           align="center"
-          gap={4}
+          gap={3}
         >
-          <InputGroup maxW={{ base: "100%", sm: "360px" }} size="lg">
+          <InputGroup maxW={{ base: "100%", sm: "320px" }} size="sm">
             <InputLeftElement pointerEvents="none">
               <SearchIcon color="gray.400" />
             </InputLeftElement>
             <Input
-              placeholder="Search classes by name or subject..."
+              placeholder="Search classes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              borderRadius="xl"
+              borderRadius="md"
               bg={cardBg}
               borderColor={borderColor}
-              fontSize="sm"
+              fontSize="xs"
             />
           </InputGroup>
 
@@ -451,12 +400,12 @@ export default function CoursesPage() {
             <Select
               value={selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value)}
-              size="lg"
-              borderRadius="xl"
+              size="sm"
+              borderRadius="md"
               bg={cardBg}
               borderColor={borderColor}
-              fontSize="sm"
-              w={{ base: "100%", sm: "200px" }}
+              fontSize="xs"
+              w={{ base: "100%", sm: "180px" }}
             >
               <option value="All">All Subjects</option>
               <option value="Mathematics">Mathematics</option>
@@ -470,298 +419,234 @@ export default function CoursesPage() {
 
         {/* Classes Grid */}
         {loading ? (
-          <Flex justify="center" align="center" minH="300px">
-            <VStack spacing={4}>
-              <Spinner size="xl" color="blue.500" thickness="4px" />
-              <Text color={lightTextColor}>Loading your classes...</Text>
-            </VStack>
+          <Flex justify="center" align="center" minH="250px">
+            <Spinner size="md" color="gray.500" thickness="2px" />
           </Flex>
         ) : filteredCourses.length === 0 ? (
           <Box
             textAlign="center"
-            py={16}
+            py={12}
             px={6}
             bg={cardBg}
-            borderRadius="2xl"
+            borderRadius="xl"
             borderWidth="1px"
             borderColor={borderColor}
           >
-            <VStack spacing={4}>
-              <Flex
-                w={16}
-                h={16}
-                bg="blue.50"
-                color="blue.500"
-                borderRadius="full"
-                align="center"
-                justify="center"
-              >
-                <FiBook size={32} />
-              </Flex>
-              <Heading size="md" color={headingColor}>
-                {searchQuery
-                  ? "No matching classes found"
-                  : "No classes created yet"}
+            <VStack spacing={3}>
+              <FiBook size={28} color="#a0aec0" />
+              <Heading size="sm" color={headingColor}>
+                {searchQuery ? "No matching classes" : "No classes created"}
               </Heading>
-              <Text color={textColor} maxW="md">
-                {searchQuery
-                  ? "Try clearing your search query or subject filters."
-                  : "Get started by creating your first class and sharing the join code with your students."}
+              <Text color={lightTextColor} fontSize="xs" maxW="md">
+                Create a class to generate a join code and start publishing
+                assignments.
               </Text>
               {!searchQuery && (
                 <Button
+                  size="sm"
                   leftIcon={<FiPlus />}
-                  colorScheme="blue"
-                  borderRadius="xl"
+                  colorScheme="gray"
+                  borderRadius="md"
                   onClick={onOpen}
                 >
-                  Create Class Now
+                  Create Class
                 </Button>
               )}
             </VStack>
           </Box>
         ) : (
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-            <AnimatePresence>
-              {filteredCourses.map((course) => {
-                const headerGradient =
-                  SUBJECT_COLORS[course.subject] || SUBJECT_COLORS.Default;
-
-                return (
-                  <MotionCard
-                    key={course._id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.96 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.96 }}
-                    transition={{ duration: 0.2 }}
-                    bg={cardBg}
-                    borderRadius="2xl"
-                    overflow="hidden"
-                    borderWidth="1px"
-                    borderColor={borderColor}
-                    boxShadow="sm"
-                    _hover={{
-                      boxShadow: "xl",
-                      transform: "translateY(-4px)",
-                    }}
-                    cursor="pointer"
-                    onClick={() =>
-                      router.push(`/teacher/classes/${course._id}`)
-                    }
-                  >
-                    {/* Top Subject Color Bar */}
-                    <Box
-                      h="120px"
-                      bg={headerGradient}
-                      p={5}
-                      position="relative"
-                      color="white"
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={5}>
+            {filteredCourses.map((course) => (
+              <Card
+                key={course._id}
+                bg={cardBg}
+                borderRadius="xl"
+                borderWidth="1px"
+                borderColor={borderColor}
+                boxShadow="none"
+                _hover={{ borderColor: hoverBorderColor }}
+                cursor="pointer"
+                onClick={() => router.push(`/teacher/classes/${course._id}`)}
+              >
+                <CardBody p={5}>
+                  <Flex justify="space-between" align="flex-start" mb={2}>
+                    <Badge
+                      variant="outline"
+                      colorScheme="gray"
+                      px={2}
+                      py={0.5}
+                      borderRadius="md"
+                      fontSize="10px"
                     >
-                      <Flex justify="space-between" align="flex-start">
-                        <Badge
-                          bg="whiteAlpha.300"
-                          color="white"
-                          backdropFilter="blur(6px)"
-                          px={3}
-                          py={1}
-                          borderRadius="full"
+                      {course.subject || "General"}
+                    </Badge>
+
+                    <Box onClick={(e) => e.stopPropagation()}>
+                      <Menu placement="bottom-end">
+                        <MenuButton
+                          as={IconButton}
+                          aria-label="Options"
+                          icon={<FiMoreVertical />}
+                          variant="ghost"
+                          size="xs"
+                          borderRadius="md"
+                        />
+                        <MenuList
+                          bg={cardBg}
+                          borderColor={borderColor}
                           fontSize="xs"
-                          fontWeight="bold"
                         >
-                          {course.subject || "General"}
-                        </Badge>
-
-                        <Box onClick={(e) => e.stopPropagation()}>
-                          <Menu placement="bottom-end">
-                            <MenuButton
-                              as={IconButton}
-                              aria-label="Options"
-                              icon={<FiMoreVertical />}
-                              variant="ghost"
-                              color="white"
-                              _hover={{ bg: "whiteAlpha.200" }}
-                              borderRadius="full"
-                              size="sm"
-                            />
-                            <MenuList bg={cardBg} borderColor={borderColor}>
-                              <MenuItem
-                                icon={<EditIcon />}
-                                onClick={() =>
-                                  router.push(
-                                    `/teacher/classes/${course._id}/edit`,
-                                  )
-                                }
-                              >
-                                Edit Class
-                              </MenuItem>
-                              <MenuItem
-                                icon={<DeleteIcon />}
-                                color="red.500"
-                                onClick={() => {
-                                  setItemToDelete({
-                                    id: course._id,
-                                    type: "course",
-                                  });
-                                  setIsDeleteAlertOpen(true);
-                                }}
-                              >
-                                Delete Class
-                              </MenuItem>
-                            </MenuList>
-                          </Menu>
-                        </Box>
-                      </Flex>
-
-                      <Heading size="md" color="white" mt={2} noOfLines={1}>
-                        {course.title}
-                      </Heading>
-                      <Text fontSize="xs" color="whiteAlpha.800">
-                        {course.level || "All Levels"}
-                      </Text>
-                    </Box>
-
-                    {/* Card Body */}
-                    <CardBody p={5}>
-                      <Text
-                        fontSize="sm"
-                        color={textColor}
-                        noOfLines={2}
-                        minH="40px"
-                        mb={4}
-                      >
-                        {course.description ||
-                          "No description provided for this class."}
-                      </Text>
-
-                      {/* Join Code Box */}
-                      <Box
-                        p={3}
-                        borderRadius="xl"
-                        bg={codeBoxBg}
-                        color={codeBoxColor}
-                        mb={4}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Flex justify="space-between" align="center">
-                          <Box>
-                            <Text
-                              fontSize="10px"
-                              fontWeight="bold"
-                              opacity={0.8}
-                            >
-                              Class Join Code
-                            </Text>
-                            <Text
-                              fontSize="md"
-                              fontWeight="extrabold"
-                              letterSpacing="1px"
-                            >
-                              {course.joinCode}
-                            </Text>
-                          </Box>
-                          <Tooltip
-                            label={
-                              copiedCodeId === course._id
-                                ? "Copied!"
-                                : "Copy Join Code"
+                          <MenuItem
+                            icon={<EditIcon />}
+                            onClick={() =>
+                              router.push(`/teacher/classes/${course._id}/edit`)
                             }
                           >
-                            <IconButton
-                              aria-label="Copy Code"
-                              icon={
-                                copiedCodeId === course._id ? (
-                                  <FiCheck />
-                                ) : (
-                                  <CopyIcon />
-                                )
-                              }
-                              size="sm"
-                              colorScheme={
-                                copiedCodeId === course._id ? "green" : "blue"
-                              }
-                              variant="ghost"
-                              onClick={() =>
-                                handleCopyCode(course.joinCode, course._id)
+                            Edit Class
+                          </MenuItem>
+                          <MenuItem
+                            icon={<DeleteIcon />}
+                            color="red.500"
+                            onClick={() => {
+                              setItemToDelete({
+                                id: course._id,
+                                type: "course",
+                              });
+                              setIsDeleteAlertOpen(true);
+                            }}
+                          >
+                            Delete Class
+                          </MenuItem>
+                        </MenuList>
+                      </Menu>
+                    </Box>
+                  </Flex>
+
+                  <Heading size="sm" color={headingColor} mb={1} noOfLines={1}>
+                    {course.title}
+                  </Heading>
+                  <Text fontSize="xs" color={lightTextColor} mb={3}>
+                    {course.level || "All Levels"}
+                  </Text>
+
+                  <Text
+                    fontSize="xs"
+                    color={textColor}
+                    noOfLines={2}
+                    minH="32px"
+                    mb={4}
+                  >
+                    {course.description || "No description provided."}
+                  </Text>
+
+                  {/* Join Code Minimal Box */}
+                  <Box
+                    p={2.5}
+                    borderRadius="md"
+                    bg={codeBoxBg}
+                    borderWidth="1px"
+                    borderColor={borderColor}
+                    mb={4}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Flex justify="space-between" align="center">
+                      <Box>
+                        <Text fontSize="9px" color={lightTextColor}>
+                          Join Code
+                        </Text>
+                        <Text
+                          fontSize="xs"
+                          fontWeight="bold"
+                          letterSpacing="1px"
+                        >
+                          {course.joinCode}
+                        </Text>
+                      </Box>
+                      <Tooltip
+                        label={
+                          copiedCodeId === course._id ? "Copied!" : "Copy Code"
+                        }
+                      >
+                        <IconButton
+                          aria-label="Copy Code"
+                          icon={
+                            copiedCodeId === course._id ? (
+                              <FiCheck />
+                            ) : (
+                              <CopyIcon />
+                            )
+                          }
+                          size="xs"
+                          variant="ghost"
+                          onClick={() =>
+                            handleCopyCode(course.joinCode, course._id)
+                          }
+                        />
+                      </Tooltip>
+                    </Flex>
+                  </Box>
+
+                  {/* Student & Assignment Counters */}
+                  <Flex
+                    justify="space-between"
+                    align="center"
+                    pt={3}
+                    borderTop="1px solid"
+                    borderColor={borderColor}
+                  >
+                    <HStack spacing={2}>
+                      <AvatarGroup size="2xs" max={3}>
+                        {Array.isArray(course.students) &&
+                          course.students.map((st, idx) => (
+                            <Avatar
+                              key={idx}
+                              name={
+                                typeof st === "object" ? st.name : "Student"
                               }
                             />
-                          </Tooltip>
-                        </Flex>
-                      </Box>
+                          ))}
+                      </AvatarGroup>
+                      <Text fontSize="11px" color={lightTextColor}>
+                        {course.students?.length || 0} Students
+                      </Text>
+                    </HStack>
 
-                      {/* Student & Assignment Counters */}
-                      <Flex
-                        justify="space-between"
-                        align="center"
-                        pt={2}
-                        borderTop="1px solid"
-                        borderColor={borderColor}
-                      >
-                        <HStack spacing={2}>
-                          <AvatarGroup size="xs" max={3}>
-                            {Array.isArray(course.students) &&
-                              course.students.map((st, idx) => (
-                                <Avatar
-                                  key={idx}
-                                  name={
-                                    typeof st === "object" ? st.name : "Student"
-                                  }
-                                />
-                              ))}
-                          </AvatarGroup>
-                          <Text
-                            fontSize="xs"
-                            fontWeight="semibold"
-                            color={lightTextColor}
-                          >
-                            {course.students?.length || 0} Students
-                          </Text>
-                        </HStack>
-
-                        <Badge
-                          colorScheme="purple"
-                          borderRadius="md"
-                          px={2.5}
-                          py={0.5}
-                          fontSize="xs"
-                        >
-                          {course.assignments?.length || 0} Assignments
-                        </Badge>
-                      </Flex>
-                    </CardBody>
-                  </MotionCard>
-                );
-              })}
-            </AnimatePresence>
+                    <Text fontSize="11px" color={lightTextColor}>
+                      {course.assignments?.length || 0} Assignments
+                    </Text>
+                  </Flex>
+                </CardBody>
+              </Card>
+            ))}
           </SimpleGrid>
         )}
       </VStack>
 
       {/* Create Class Modal */}
       <Modal isOpen={isOpen} onClose={onClose} isCentered size="md">
-        <ModalOverlay backdropFilter="blur(6px)" bg="blackAlpha.600" />
+        <ModalOverlay bg="blackAlpha.400" />
         <ModalContent
-          borderRadius="2xl"
+          borderRadius="xl"
           overflow="hidden"
           bg={modalBg}
-          boxShadow="2xl"
+          borderWidth="1px"
+          borderColor={borderColor}
+          boxShadow="xl"
         >
-          <ModalHeader
-            bg="linear-gradient(135deg, #3182ce 0%, #63b3ed 100%)"
-            color="white"
-            p={6}
-          >
-            <Heading size="md">Create New Class</Heading>
-            <Text fontSize="xs" opacity={0.9} mt={1}>
+          <ModalHeader pt={6} px={6} pb={0}>
+            <Heading size="md" color={headingColor}>
+              Create New Class
+            </Heading>
+            <Text fontSize="xs" color={lightTextColor} mt={1}>
               Generate a unique course & share code with students
             </Text>
           </ModalHeader>
-          <ModalCloseButton color="white" top={6} right={6} />
+          <ModalCloseButton top={6} right={6} />
 
           <ModalBody p={6}>
             <VStack spacing={4}>
               <FormControl isRequired>
-                <FormLabel fontSize="sm" fontWeight="semibold">
+                <FormLabel fontSize="xs" fontWeight="medium">
                   Class Title
                 </FormLabel>
                 <Input
@@ -769,12 +654,13 @@ export default function CoursesPage() {
                   value={form.title}
                   onChange={handleChange}
                   placeholder="e.g. Advanced Data Structures"
-                  borderRadius="xl"
+                  borderRadius="md"
+                  fontSize="xs"
                 />
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel fontSize="sm" fontWeight="semibold">
+                <FormLabel fontSize="xs" fontWeight="medium">
                   Subject
                 </FormLabel>
                 <Select
@@ -782,7 +668,8 @@ export default function CoursesPage() {
                   value={form.subject}
                   onChange={handleChange}
                   placeholder="Select Subject"
-                  borderRadius="xl"
+                  borderRadius="md"
+                  fontSize="xs"
                 >
                   <option value="Mathematics">Mathematics</option>
                   <option value="Science">Science</option>
@@ -793,7 +680,7 @@ export default function CoursesPage() {
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel fontSize="sm" fontWeight="semibold">
+                <FormLabel fontSize="xs" fontWeight="medium">
                   Education Level
                 </FormLabel>
                 <Select
@@ -801,7 +688,8 @@ export default function CoursesPage() {
                   value={form.level}
                   onChange={handleChange}
                   placeholder="Select Level"
-                  borderRadius="xl"
+                  borderRadius="md"
+                  fontSize="xs"
                 >
                   <option value="Beginner">Beginner</option>
                   <option value="Intermediate">Intermediate</option>
@@ -811,30 +699,40 @@ export default function CoursesPage() {
               </FormControl>
 
               <FormControl>
-                <FormLabel fontSize="sm" fontWeight="semibold">
+                <FormLabel fontSize="xs" fontWeight="medium">
                   Description
                 </FormLabel>
                 <Textarea
                   name="description"
                   value={form.description}
                   onChange={handleChange}
-                  placeholder="Brief summary of the course syllabus and goals..."
+                  placeholder="Brief course summary..."
                   rows={3}
-                  borderRadius="xl"
+                  borderRadius="md"
+                  fontSize="xs"
                 />
               </FormControl>
             </VStack>
           </ModalBody>
 
-          <ModalFooter px={6} pb={6} gap={3}>
-            <Button onClick={onClose} variant="ghost" borderRadius="xl">
+          <ModalFooter px={6} pb={6} gap={2}>
+            <Button
+              onClick={onClose}
+              variant="ghost"
+              size="sm"
+              borderRadius="md"
+            >
               Cancel
             </Button>
             <Button
-              colorScheme="blue"
+              colorScheme="gray"
+              bg={btnBg}
+              color={btnColor}
+              _hover={{ bg: btnHoverBg }}
               onClick={handleCreateCourse}
-              borderRadius="xl"
-              px={6}
+              size="sm"
+              borderRadius="md"
+              px={5}
             >
               Create Class
             </Button>
@@ -849,29 +747,30 @@ export default function CoursesPage() {
         onClose={() => setIsDeleteAlertOpen(false)}
         isCentered
       >
-        <AlertDialogOverlay backdropFilter="blur(4px)" bg="blackAlpha.600">
-          <AlertDialogContent borderRadius="2xl" bg={modalBg}>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+        <AlertDialogOverlay bg="blackAlpha.400">
+          <AlertDialogContent borderRadius="xl" bg={modalBg}>
+            <AlertDialogHeader fontSize="md" fontWeight="semibold">
               Delete Class
             </AlertDialogHeader>
-            <AlertDialogBody>
+            <AlertDialogBody fontSize="xs" color={lightTextColor}>
               Are you sure you want to delete this class? All associated
-              materials, announcements, and assignments will be permanently
-              removed.
+              materials will be permanently removed.
             </AlertDialogBody>
-            <AlertDialogFooter gap={3}>
+            <AlertDialogFooter gap={2}>
               <Button
                 ref={cancelRef}
                 onClick={() => setIsDeleteAlertOpen(false)}
                 variant="ghost"
-                borderRadius="xl"
+                size="sm"
+                borderRadius="md"
               >
                 Cancel
               </Button>
               <Button
                 colorScheme="red"
+                size="sm"
                 onClick={handleDelete}
-                borderRadius="xl"
+                borderRadius="md"
               >
                 Delete Class
               </Button>

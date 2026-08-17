@@ -20,17 +20,20 @@ import {
   CodeProps,
   HeadingProps,
   TextProps,
+  Badge,
 } from "@chakra-ui/react";
-import { FaCopy, FaMicrophone, FaUser } from "react-icons/fa";
+import { FaCopy, FaUser } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { ArrowUpIcon } from "@chakra-ui/icons";
 import { MdAssistant } from "react-icons/md";
+import { FiCheckCircle } from "react-icons/fi";
 
 const MotionBox = motion(Box);
 
 interface ChatWindowProps {
   query: string;
   setQuery: (value: string) => void;
+  activePrompt?: string;
   currentMessages: Array<{ query: string; response: string }>;
   currentResponse: string;
   loading: boolean;
@@ -45,6 +48,7 @@ interface MarkdownComponentProps {
 const ChatWindow: React.FC<ChatWindowProps> = ({
   query,
   setQuery,
+  activePrompt,
   currentMessages,
   currentResponse,
   loading,
@@ -55,10 +59,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const inputBg = useColorModeValue("gray.50", "gray.900");
   const textColor = useColorModeValue("gray.800", "gray.200");
   const subTextColor = useColorModeValue("gray.600", "gray.400");
-  const primaryColor = useColorModeValue("teal.600", "blue.300");
-  const codeBg = useColorModeValue("teal.50", "blue.900");
-  const dividerColor = useColorModeValue("gray.200", "gray.600");
-  const askButtonColor = useColorModeValue("teal", "blue");
+  const codeBg = useColorModeValue("gray.100", "gray.800");
+  const dividerColor = useColorModeValue("gray.200", "gray.700");
   const toast = useToast();
 
   const formatMarkdown = (text: string) => {
@@ -80,9 +82,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         return (
           <Heading
             as="h1"
-            size="lg"
-            color={primaryColor}
-            my={4}
+            size="md"
+            color={textColor}
+            my={3}
             {...(props as HeadingProps)}
           >
             {children}
@@ -93,9 +95,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         return (
           <Heading
             as="h2"
-            size="md"
-            color={primaryColor}
-            my={3}
+            size="sm"
+            color={textColor}
+            my={2}
             {...(props as HeadingProps)}
           >
             {children}
@@ -106,8 +108,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         return (
           <Heading
             as="h3"
-            size="sm"
-            color={primaryColor}
+            size="xs"
+            color={textColor}
             my={2}
             {...(props as HeadingProps)}
           >
@@ -117,7 +119,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       },
       p({ children, ...props }: MarkdownComponentProps) {
         return (
-          <Text my={2} lineHeight="tall" {...(props as TextProps)}>
+          <Text my={1.5} lineHeight="relaxed" fontSize="sm" {...(props as TextProps)}>
             {children}
           </Text>
         );
@@ -138,13 +140,30 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
       onAskAI();
     }
   };
 
   return (
-    <Flex direction="column" h="100vh" gap={4}>
+    <Flex direction="column" h="100vh" gap={3}>
+      {/* Top Banner Indicator */}
+      <Flex p={3} borderBottomWidth="1px" borderColor={dividerColor} justify="space-between" align="center">
+        <HStack spacing={2}>
+          <MdAssistant size={20} />
+          <Text fontWeight="semibold" fontSize="sm">
+            Cognivia AI
+          </Text>
+        </HStack>
+
+        <Badge variant="outline" colorScheme="gray" borderRadius="md" px={2.5} py={0.5} fontSize="10px">
+          <HStack spacing={1}>
+            <FiCheckCircle color="#38a169" />
+            <Text>Notes, Quizzes & Courses Context Active</Text>
+          </HStack>
+        </Badge>
+      </Flex>
+
       <Box
         flex={1}
         p={4}
@@ -162,20 +181,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           >
             <Avatar
               icon={<MdAssistant />}
-              size="xl"
-              mb={4}
-              bg={primaryColor}
+              size="lg"
+              mb={3}
+              bg="gray.700"
               color="white"
             />
-            <Text fontSize="xl" fontWeight="medium">
+            <Text fontSize="lg" fontWeight="semibold" color={textColor}>
               Cognivia AI
             </Text>
-            <Text color={"gray.500"} fontSize="xs" fontWeight="thin" mb={2}>
-              (powered by Gemini)
+            <Text color="gray.500" fontSize="xs" mb={4}>
+              Personalized Educational Assistant with Context & Memory
             </Text>
-            <Text textAlign="center" maxW="md">
-              Ask me anything about your learning materials or start a new
-              conversation
+            <Text textAlign="center" maxW="md" fontSize="xs" color={subTextColor}>
+              Ask me about your generated notes, upcoming quizzes, enrolled courses, or any study topics.
             </Text>
           </Flex>
         ) : (
@@ -188,43 +206,43 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 transition={{ duration: 0.2 }}
               >
                 <VStack align="stretch" spacing={2}>
-                  <Flex align="center" gap={3}>
+                  <Flex align="center" gap={2.5}>
                     <Avatar
                       icon={<FaUser />}
-                      size="sm"
+                      size="xs"
                       bg="gray.500"
                       color="white"
                     />
-                    <Text fontWeight="medium" color={textColor}>
+                    <Text fontWeight="semibold" fontSize="xs" color={textColor}>
                       You
                     </Text>
                   </Flex>
-                  <Text color={textColor} pl={10}>
+                  <Text color={textColor} pl={8} fontSize="sm">
                     {msg.query}
                   </Text>
 
-                  <Divider borderColor={dividerColor} my={2} />
+                  <Divider borderColor={dividerColor} my={1.5} />
 
-                  <Flex align="center" gap={3}>
+                  <Flex align="center" gap={2.5}>
                     <Avatar
                       icon={<MdAssistant />}
-                      size="sm"
-                      bg={primaryColor}
+                      size="xs"
+                      bg="gray.800"
                       color="white"
                     />
-                    <Text fontWeight="medium" color={textColor}>
+                    <Text fontWeight="semibold" fontSize="xs" color={textColor}>
                       Cognivia AI
                     </Text>
                     <IconButton
                       aria-label="Copy response"
                       icon={<FaCopy />}
-                      size="sm"
+                      size="xs"
                       variant="ghost"
                       ml="auto"
                       onClick={() => {
                         onCopyResponse(msg.response);
                         toast({
-                          title: "Copied!",
+                          title: "Copied to clipboard",
                           status: "success",
                           duration: 2000,
                           isClosable: true,
@@ -232,7 +250,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                       }}
                     />
                   </Flex>
-                  <Box pl={10}>{formatMarkdown(msg.response)}</Box>
+                  <Box pl={8}>{formatMarkdown(msg.response)}</Box>
                 </VStack>
               </MotionBox>
             ))}
@@ -244,38 +262,44 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 transition={{ duration: 0.2 }}
               >
                 <VStack align="stretch" spacing={2}>
-                  <Flex align="center" gap={3}>
+                  <Flex align="center" gap={2.5}>
                     <Avatar
                       icon={<FaUser />}
-                      size="sm"
+                      size="xs"
                       bg="gray.500"
                       color="white"
                     />
-                    <Text fontWeight="medium" color={textColor}>
+                    <Text fontWeight="semibold" fontSize="xs" color={textColor}>
                       You
                     </Text>
                   </Flex>
-                  <Text color={textColor} pl={10}>
-                    {query}
+                  <Text color={textColor} pl={8} fontSize="sm">
+                    {activePrompt || query}
                   </Text>
 
-                  <Divider borderColor={dividerColor} my={2} />
+                  <Divider borderColor={dividerColor} my={1.5} />
 
-                  <Flex align="center" gap={3}>
+                  <Flex align="center" gap={2.5}>
                     <Avatar
                       icon={<MdAssistant />}
-                      size="sm"
-                      bg={primaryColor}
+                      size="xs"
+                      bg="gray.800"
                       color="white"
                     />
-                    <Text fontWeight="medium" color={textColor}>
+                    <Text fontWeight="semibold" fontSize="xs" color={textColor}>
                       Cognivia AI
                     </Text>
-                    <Spinner size="sm" ml="auto" />
+                    <Spinner size="xs" ml="auto" />
                   </Flex>
-                  <Text color={textColor} pl={10}>
-                    {currentResponse}
-                  </Text>
+                  <Box pl={8}>
+                    {currentResponse ? (
+                      formatMarkdown(currentResponse)
+                    ) : (
+                      <Text color={subTextColor} fontSize="xs" fontStyle="italic">
+                        Cognivia AI is thinking...
+                      </Text>
+                    )}
+                  </Box>
                 </VStack>
               </MotionBox>
             )}
@@ -283,61 +307,40 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         )}
       </Box>
 
+      {/* Input Field Bar */}
       <HStack
         p={2}
         bg={inputBg}
         borderRadius="xl"
-        boxShadow="sm"
-        _focusWithin={{
-          boxShadow: `0 0 0 2px ${primaryColor}`,
-        }}
+        borderWidth="1px"
+        borderColor={dividerColor}
+        m={2}
       >
         <Input
-          placeholder="Ask a question..."
+          placeholder="Ask Cognivia AI about your notes, quizzes, courses..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          size="lg"
+          size="md"
           flex={1}
           bg={surfaceColor}
           color={textColor}
           onKeyDown={handleKeyDown}
-          borderRadius="full"
+          borderRadius="lg"
           borderColor={dividerColor}
-          _focus={{
-            borderColor: primaryColor,
-            boxShadow: "none",
-          }}
+          fontSize="xs"
         />
         <IconButton
-          aria-label="Record"
-          variant="outline"
-          colorScheme={askButtonColor}
-          onClick={() => {}}
-          isLoading={loading}
-          icon={<FaMicrophone />}
-          size="lg"
-          borderRadius="full"
-          _hover={{
-            transform: "translateY(-2px)",
-            boxShadow: "md",
-          }}
-          transition="all 0.2s"
-        ></IconButton>
-        <IconButton
-          aria-label="Ask AI"
-          variant="outline"
-          colorScheme={askButtonColor}
+          aria-label="Ask Cognivia AI"
+          colorScheme="gray"
+          bg={useColorModeValue("gray.800", "gray.100")}
+          color={useColorModeValue("white", "gray.900")}
+          _hover={{ bg: useColorModeValue("gray.700", "white") }}
           onClick={onAskAI}
           isLoading={loading}
           icon={<ArrowUpIcon />}
-          size="lg"
-          borderRadius="full"
-          _hover={{
-            transform: "translateY(-2px)",
-            boxShadow: "md",
-          }}
-          transition="all 0.2s"
-        ></IconButton>
+          size="md"
+          borderRadius="lg"
+        />
       </HStack>
     </Flex>
   );

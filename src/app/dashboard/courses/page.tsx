@@ -32,9 +32,6 @@ import {
 import { useRouter } from "next/navigation";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiPlus, FiArrowRight, FiKey } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
-
-const MotionCard = motion(Card);
 
 interface Course {
   _id: string;
@@ -48,15 +45,6 @@ interface Course {
   };
 }
 
-const SUBJECT_COLORS: Record<string, string> = {
-  Mathematics: "linear-gradient(135deg, #3182ce 0%, #63b3ed 100%)",
-  Science: "linear-gradient(135deg, #38a169 0%, #68d391 100%)",
-  English: "linear-gradient(135deg, #dd6b20 0%, #f6ad55 100%)",
-  History: "linear-gradient(135deg, #805ad5 0%, #b794f4 100%)",
-  ComputerScience: "linear-gradient(135deg, #319795 0%, #4fd1c5 100%)",
-  Default: "linear-gradient(135deg, #2b6cb0 0%, #4299e1 100%)",
-};
-
 export default function StudentCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,16 +55,15 @@ export default function StudentCoursesPage() {
   const router = useRouter();
 
   const pageBg = useColorModeValue("gray.50", "gray.900");
-  const cardBg = useColorModeValue("white", "gray.850");
+  const cardBg = useColorModeValue("white", "gray.800");
   const headingColor = useColorModeValue("gray.800", "white");
   const textColor = useColorModeValue("gray.600", "gray.300");
   const metaColor = useColorModeValue("gray.500", "gray.400");
-  const borderColor = useColorModeValue("gray.150", "gray.750");
-
-  const heroBg = useColorModeValue(
-    "linear-gradient(135deg, #1e293b 0%, #334155 100%)",
-    "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
-  );
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const hoverBorderColor = useColorModeValue("gray.400", "gray.500");
+  const btnBg = useColorModeValue("gray.900", "white");
+  const btnColor = useColorModeValue("white", "gray.900");
+  const btnHoverBg = useColorModeValue("gray.800", "gray.100");
 
   const fetchCourses = async () => {
     setLoading(true);
@@ -158,169 +145,127 @@ export default function StudentCoursesPage() {
 
   return (
     <Box p={{ base: 4, md: 8 }} maxW="7xl" mx="auto" bg={pageBg} minH="100vh">
-      <VStack spacing={8} align="stretch">
-        {/* Banner Section */}
-        <Box
-          bg={heroBg}
-          borderRadius="3xl"
-          p={{ base: 6, md: 8 }}
-          color="white"
-          boxShadow="xl"
+      <VStack spacing={6} align="stretch">
+        {/* Minimal Banner Section */}
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          justify="space-between"
+          align={{ base: "flex-start", md: "center" }}
+          gap={4}
+          pb={2}
         >
-          <Flex
-            direction={{ base: "column", md: "row" }}
-            justify="space-between"
-            align={{ base: "flex-start", md: "center" }}
-            gap={6}
-          >
-            <VStack align="flex-start" spacing={2}>
-              <Badge colorScheme="blue" px={3} py={1} borderRadius="full" fontSize="xs" fontWeight="bold">
-                Student Portal
-              </Badge>
-              <Heading size="xl" fontWeight="extrabold">
-                My Enrolled Classes ({courses.length})
-              </Heading>
-              <Text color="gray.300" fontSize="sm" maxW="xl">
-                Access your class announcements, view assignment requirements, download resources, and join live sessions.
-              </Text>
-            </VStack>
+          <Box>
+            <Heading size="lg" fontWeight="bold" color={headingColor}>
+              My Enrolled Classes ({courses.length})
+            </Heading>
+            <Text color={metaColor} fontSize="sm" mt={0.5}>
+              Access your class stream, assignments, and live video sessions
+            </Text>
+          </Box>
 
-            <Button
-              leftIcon={<FiPlus />}
-              colorScheme="blue"
-              size="lg"
-              borderRadius="xl"
-              px={8}
-              onClick={onOpen}
-              boxShadow="0 4px 20px rgba(59, 130, 246, 0.4)"
-            >
-              Join Class with Code
-            </Button>
-          </Flex>
-        </Box>
+          <Button
+            leftIcon={<FiPlus />}
+            colorScheme="gray"
+            bg={btnBg}
+            color={btnColor}
+            _hover={{ bg: btnHoverBg }}
+            size="md"
+            borderRadius="md"
+            onClick={onOpen}
+          >
+            Join Class with Code
+          </Button>
+        </Flex>
 
         {/* Courses Grid */}
         {loading ? (
-          <Flex justify="center" align="center" minH="300px">
-            <VStack spacing={3}>
-              <Spinner size="xl" color="blue.500" thickness="4px" />
-              <Text color={metaColor}>Loading your classes...</Text>
-            </VStack>
+          <Flex justify="center" align="center" minH="250px">
+            <Spinner size="md" color="gray.500" thickness="2px" />
           </Flex>
         ) : courses.length === 0 ? (
           <Card
-            p={12}
-            borderRadius="3xl"
+            p={10}
+            borderRadius="xl"
             bg={cardBg}
             borderWidth="1px"
             borderColor={borderColor}
             textAlign="center"
           >
-            <VStack spacing={4}>
-              <Flex w={16} h={16} bg="blue.50" color="blue.500" borderRadius="full" align="center" justify="center">
-                <FaGraduationCap size={32} />
-              </Flex>
-              <Heading size="md" color={headingColor}>
+            <VStack spacing={3}>
+              <FaGraduationCap size={32} color="#a0aec0" />
+              <Heading size="sm" color={headingColor}>
                 You haven&apos;t joined any classes yet
               </Heading>
-              <Text color={textColor} maxW="md">
-                Ask your teacher for the 6-character class code and click &quot;Join Class with Code&quot; above to get started.
+              <Text color={textColor} fontSize="xs" maxW="md">
+                Ask your teacher for the 6-character class code to join your workspace.
               </Text>
-              <Button leftIcon={<FiPlus />} colorScheme="blue" borderRadius="xl" onClick={onOpen}>
+              <Button size="sm" leftIcon={<FiPlus />} colorScheme="gray" borderRadius="md" onClick={onOpen}>
                 Enter Class Code
               </Button>
             </VStack>
           </Card>
         ) : (
-          <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} spacing={6}>
-            <AnimatePresence>
-              {courses.map((course) => {
-                const headerGradient =
-                  SUBJECT_COLORS[course.subject || ""] || SUBJECT_COLORS.Default;
+          <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} spacing={5}>
+            {courses.map((course) => (
+              <Card
+                key={course._id}
+                bg={cardBg}
+                borderRadius="xl"
+                borderWidth="1px"
+                borderColor={borderColor}
+                boxShadow="none"
+                _hover={{ borderColor: hoverBorderColor }}
+                cursor="pointer"
+                onClick={() => router.push(`/dashboard/courses/${course._id}`)}
+              >
+                <CardBody p={5}>
+                  <Badge variant="outline" colorScheme="gray" px={2} py={0.5} borderRadius="md" fontSize="10px" mb={2}>
+                    {course.subject || "General"}
+                  </Badge>
 
-                return (
-                  <MotionCard
-                    key={course._id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.96 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.2 }}
-                    bg={cardBg}
-                    borderRadius="2xl"
-                    overflow="hidden"
-                    borderWidth="1px"
-                    borderColor={borderColor}
-                    boxShadow="sm"
-                    _hover={{
-                      boxShadow: "xl",
-                      transform: "translateY(-4px)",
-                    }}
-                    cursor="pointer"
-                    onClick={() => router.push(`/dashboard/courses/${course._id}`)}
-                  >
-                    {/* Header Banner */}
-                    <Box h="110px" bg={headerGradient} p={5} color="white">
-                      <HStack justify="space-between" mb={2}>
-                        <Badge
-                          bg="whiteAlpha.300"
-                          color="white"
-                          backdropFilter="blur(4px)"
-                          px={3}
-                          py={1}
-                          borderRadius="full"
-                          fontSize="xs"
-                        >
-                          {course.subject || "General"}
-                        </Badge>
-                      </HStack>
+                  <Heading size="sm" color={headingColor} mb={2} noOfLines={1}>
+                    {course.title}
+                  </Heading>
 
-                      <Heading size="md" color="white" noOfLines={1}>
-                        {course.title}
-                      </Heading>
-                    </Box>
+                  <Text fontSize="xs" color={textColor} noOfLines={2} minH="36px" mb={4}>
+                    {course.description || "No description provided for this course."}
+                  </Text>
 
-                    <CardBody p={5}>
-                      <Text fontSize="sm" color={textColor} noOfLines={2} minH="40px" mb={4}>
-                        {course.description || "No description provided for this course."}
+                  <Flex justify="space-between" align="center" pt={3} borderTop="1px solid" borderColor={borderColor}>
+                    <HStack spacing={2}>
+                      <Avatar size="2xs" name={course.teacher?.name || "Teacher"} src={course.teacher?.avatar} />
+                      <Text fontSize="xs" color={metaColor}>
+                        {course.teacher?.name || "Instructor"}
                       </Text>
+                    </HStack>
 
-                      <Flex justify="space-between" align="center" pt={3} borderTop="1px solid" borderColor={borderColor}>
-                        <HStack spacing={2.5}>
-                          <Avatar size="xs" name={course.teacher?.name || "Teacher"} src={course.teacher?.avatar} />
-                          <Text fontSize="xs" fontWeight="semibold" color={metaColor}>
-                            {course.teacher?.name || "Instructor"}
-                          </Text>
-                        </HStack>
-
-                        <HStack spacing={1} color="blue.500" fontSize="xs" fontWeight="bold">
-                          <Text>Open Workspace</Text>
-                          <FiArrowRight />
-                        </HStack>
-                      </Flex>
-                    </CardBody>
-                  </MotionCard>
-                );
-              })}
-            </AnimatePresence>
+                    <HStack spacing={1} color={textColor} fontSize="xs" fontWeight="medium">
+                      <Text>Open</Text>
+                      <FiArrowRight />
+                    </HStack>
+                  </Flex>
+                </CardBody>
+              </Card>
+            ))}
           </SimpleGrid>
         )}
       </VStack>
 
       {/* Join Class Modal */}
       <Modal isOpen={isOpen} onClose={onClose} isCentered size="md">
-        <ModalOverlay backdropFilter="blur(6px)" bg="blackAlpha.600" />
-        <ModalContent borderRadius="2xl" overflow="hidden" bg={cardBg} boxShadow="2xl">
-          <ModalHeader bg="linear-gradient(135deg, #2b6cb0 0%, #4299e1 100%)" color="white" p={6}>
-            <Heading size="md">Join Class via Code</Heading>
-            <Text fontSize="xs" opacity={0.9} mt={1}>
+        <ModalOverlay bg="blackAlpha.400" />
+        <ModalContent borderRadius="xl" overflow="hidden" bg={cardBg} borderWidth="1px" borderColor={borderColor} boxShadow="xl">
+          <ModalHeader pt={6} px={6} pb={0}>
+            <Heading size="md" color={headingColor}>Join Class via Code</Heading>
+            <Text fontSize="xs" color={metaColor} mt={1}>
               Enter the 6-character code provided by your instructor
             </Text>
           </ModalHeader>
-          <ModalCloseButton color="white" top={6} right={6} />
+          <ModalCloseButton top={6} right={6} />
 
           <ModalBody p={6}>
-            <VStack spacing={4}>
-              <InputGroup size="lg">
+            <VStack spacing={3}>
+              <InputGroup size="md">
                 <InputLeftElement pointerEvents="none">
                   <FiKey color="#a0aec0" />
                 </InputLeftElement>
@@ -332,7 +277,8 @@ export default function StudentCoursesPage() {
                   letterSpacing="2px"
                   fontWeight="bold"
                   textTransform="uppercase"
-                  borderRadius="xl"
+                  borderRadius="md"
+                  fontSize="sm"
                 />
               </InputGroup>
               <Text fontSize="xs" color={metaColor}>
@@ -341,16 +287,20 @@ export default function StudentCoursesPage() {
             </VStack>
           </ModalBody>
 
-          <ModalFooter px={6} pb={6} gap={3}>
-            <Button onClick={onClose} variant="ghost" borderRadius="xl">
+          <ModalFooter px={6} pb={6} gap={2}>
+            <Button onClick={onClose} variant="ghost" size="sm" borderRadius="md">
               Cancel
             </Button>
             <Button
-              colorScheme="blue"
+              colorScheme="gray"
+              bg={btnBg}
+              color={btnColor}
+              _hover={{ bg: btnHoverBg }}
               onClick={handleJoinCourse}
               isLoading={joining}
-              borderRadius="xl"
-              px={6}
+              size="sm"
+              borderRadius="md"
+              px={5}
             >
               Join Class
             </Button>

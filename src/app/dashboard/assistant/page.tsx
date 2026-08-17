@@ -19,14 +19,38 @@ import { FiMenu } from "react-icons/fi";
 import ChatHistory from "@/components/ai-assistant-components/ChatHistory";
 import ChatWindow from "@/components/ai-assistant-components/ChatWindow";
 import { useDisclosure } from "@chakra-ui/react";
-import { useSession } from "next-auth/react";
 
-const generateChatId = () =>
-  `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+interface DBMessage {
+  sender: "user" | "assistant";
+  content: string;
+  createdAt: string;
+}
+
+interface DBChatSession {
+  _id: string;
+  title: string;
+  messages: DBMessage[];
+  updatedAt: string;
+}
+
+function mapDBMessagesToPairs(messages: DBMessage[]) {
+  const pairs: { query: string; response: string }[] = [];
+  for (let i = 0; i < messages.length; i += 2) {
+    const userMsg = messages[i];
+    const botMsg = messages[i + 1];
+    if (userMsg && userMsg.sender === "user") {
+      pairs.push({
+        query: userMsg.content,
+        response: botMsg ? botMsg.content : "...",
+      });
+    }
+  }
+  return pairs;
+}
 
 export default function AIAssistant() {
-  const { data: session } = useSession();
   const [query, setQuery] = useState<string>("");
+  const [activePrompt, setActivePrompt] = useState<string>("");
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<
     Record<
@@ -48,16 +72,41 @@ export default function AIAssistant() {
   const surfaceColor = useColorModeValue("white", "gray.800");
   const dividerColor = useColorModeValue("gray.200", "gray.600");
 
+  // Load chat history from MongoDB API
   useEffect(() => {
-    const savedHistory = localStorage.getItem("chatHistory");
-    if (savedHistory) {
-      setChatHistory(JSON.parse(savedHistory));
-    }
-  }, []);
+    async function loadSessions() {
+      try {
+        const res = await fetch("/api/chat");
+        if (res.ok) {
+          const sessions: DBChatSession[] = await res.json();
+          const historyMap: Record<
+            string,
+            {
+              id: string;
+              title: string;
+              messages: { query: string; response: string }[];
+              timestamp: number;
+            }
+          > = {};
 
-  useEffect(() => {
-    localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-  }, [chatHistory]);
+          sessions.forEach((s) => {
+            historyMap[s._id] = {
+              id: s._id,
+              title: s.title || "New Chat",
+              messages: mapDBMessagesToPairs(s.messages || []),
+              timestamp: new Date(s.updatedAt).getTime(),
+            };
+          });
+
+          setChatHistory(historyMap);
+        }
+      } catch (err) {
+        console.error("Failed to load saved chat sessions:", err);
+      }
+    }
+
+    loadSessions();
+  }, []);
 
   const handleAskAI = async () => {
     if (!query.trim()) {
@@ -71,63 +120,81 @@ export default function AIAssistant() {
       return;
     }
 
+    const userPrompt = query.trim();
+    setActivePrompt(userPrompt);
+    setQuery("");
     setLoading(true);
     setCurrentResponse("");
 
     try {
-      const responseData = await fetch("/api/gemini", {
+      const res = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.user?.accessToken}`,
         },
-        body: JSON.stringify({ prompt: query }),
-      }).then((res) => res.json());
+        body: JSON.stringify({
+          sessionId: currentChatId,
+          prompt: userPrompt,
+        }),
+      });
 
-      setCurrentResponse(responseData?.response || "No response.");
-
-      const newMessage = {
-        query,
-        response: responseData?.response || "No response.",
-      };
-
-      if (!currentChatId) {
-        const newChatId = generateChatId();
-        const firstFewWords = query.split(" ").slice(0, 4).join(" ") + "...";
-
-        setChatHistory((prev) => ({
-          ...prev,
-          [newChatId]: {
-            id: newChatId,
-            title: firstFewWords,
-            messages: [newMessage],
-            timestamp: Date.now(),
-          },
-        }));
-        setCurrentChatId(newChatId);
-      } else {
-        setChatHistory((prev) => ({
-          ...prev,
-          [currentChatId]: {
-            ...prev[currentChatId],
-            messages: [...prev[currentChatId].messages, newMessage],
-            timestamp: Date.now(),
-          },
-        }));
+      if (!res.ok || !res.body) {
+        throw new Error("Failed to send message to Cognivia AI");
       }
+
+      const sessionIdHeader = res.headers.get("X-Session-Id");
+      const titleHeader = res.headers.get("X-Session-Title");
+      const sessionTitle = titleHeader
+        ? decodeURIComponent(titleHeader)
+        : userPrompt.substring(0, 20) + "...";
+      const activeSessionId =
+        sessionIdHeader || currentChatId || `chat_${Date.now()}`;
+
+      setCurrentChatId(activeSessionId);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let streamedText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        streamedText += chunk;
+        setCurrentResponse(streamedText);
+      }
+
+      setChatHistory((prev) => {
+        const existingMessages = prev[activeSessionId]?.messages || [];
+        return {
+          ...prev,
+          [activeSessionId]: {
+            id: activeSessionId,
+            title: prev[activeSessionId]?.title || sessionTitle,
+            messages: [
+              ...existingMessages,
+              { query: userPrompt, response: streamedText },
+            ],
+            timestamp: Date.now(),
+          },
+        };
+      });
+
+      setCurrentResponse("");
+      setActivePrompt("");
     } catch (error) {
-      console.error("Gemini API Error:", error);
+      console.error("Cognivia AI Error:", error);
       toast({
         title: "Error",
-        description: "Something went wrong. Please try again later.",
+        description: "Something went wrong sending your message.",
         status: "error",
         duration: 3000,
         isClosable: true,
       });
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-    setQuery("");
   };
 
   const handleCopyResponse = (text: string) => {
@@ -141,25 +208,41 @@ export default function AIAssistant() {
     });
   };
 
-  const handleDeleteChat = (chatId: string) => {
-    setChatHistory((prev) => {
-      const newHistory = { ...prev };
-      delete newHistory[chatId];
-      return newHistory;
-    });
+  const handleDeleteChat = async (chatId: string) => {
+    try {
+      const res = await fetch(`/api/chat/${chatId}`, {
+        method: "DELETE",
+      });
 
-    if (currentChatId === chatId) {
-      setCurrentChatId(null);
-      setCurrentResponse("");
+      if (res.ok) {
+        setChatHistory((prev) => {
+          const newHistory = { ...prev };
+          delete newHistory[chatId];
+          return newHistory;
+        });
+
+        if (currentChatId === chatId) {
+          setCurrentChatId(null);
+          setCurrentResponse("");
+        }
+
+        toast({
+          title: "Chat Deleted",
+          description: "The selected conversation has been deleted.",
+          status: "info",
+          duration: 2000,
+          isClosable: true,
+        });
+      } else {
+        throw new Error("Failed to delete chat session");
+      }
+    } catch (err) {
+      console.error("Delete chat error:", err);
+      toast({
+        title: "Deletion failed",
+        status: "error",
+      });
     }
-
-    toast({
-      title: "Chat Deleted",
-      description: "The selected chat history has been removed.",
-      status: "info",
-      duration: 2000,
-      isClosable: true,
-    });
   };
 
   const handleOpenChat = (chatId: string) => {
@@ -236,6 +319,7 @@ export default function AIAssistant() {
           <ChatWindow
             query={query}
             setQuery={setQuery}
+            activePrompt={activePrompt}
             currentMessages={currentMessages}
             currentResponse={currentResponse}
             loading={loading}
