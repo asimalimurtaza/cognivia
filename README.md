@@ -380,11 +380,26 @@ Create the appropriate environment configuration for the application.
 Example:
 
 ```env
-GEMINI_API_KEY=your-api-key
-
-# Add application-specific
-# authentication and database
-# configuration here.
+GEMINI_API_KEY
+GEMINI_PRIMARY_MODEL
+GEMINI_FALLBACK_MODEL
+UPSTASH_REDIS_REST_TOKEN
+UPSTASH_REDIS_REST_URL
+NEXTAUTH_URL
+MONGODB_URI
+GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET
+NEXTAUTH_SECRET
+GITHUB_CLIENT_ID
+GITHUB_CLIENT_SECRET
+GEMINI_API_URL
+STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+AGORA_PRIMARY_CERTIFICATE
+AGORA_APP_ID
+AGORA_APP_CERT
+NEXT_PUBLIC_AGORA_APP_ID
 ```
 
 Never commit API keys, credentials, or other secrets to the repository.
